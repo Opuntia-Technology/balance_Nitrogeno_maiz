@@ -1,0 +1,1403 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tablero de Fertilización Nitrogenada · Maíz · Suri Yaco</title>
+<style>
+:root{
+  --green:#4A148C; --green2:#6A1B9A; --accent:#8E24AA; --accent2:#A855C7;
+  --ink:#1d1526; --muted:#6c6377; --line:#e7e1ee; --bg:#f1edf5; --card:#ffffff;
+  --shadow:0 1px 2px rgba(35,20,50,.05), 0 8px 24px rgba(35,20,50,.07);
+  --radius:16px; --rojo:#D6483F; --amber:#E8A21A; --azul:#1565C0; --violeta:#00897B;
+  --soft:#faf7fd;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;line-height:1.45;font-size:14px}
+.wrap{max-width:1360px;margin:0 auto;padding:0 20px}
+
+/* ---------- HERO ---------- */
+.hero{position:relative;overflow:hidden;color:#f3e9fb;
+  background:radial-gradient(1100px 380px at 82% -20%, rgba(142,36,170,.60), transparent 60%),
+    radial-gradient(900px 500px at 0% 120%, rgba(74,20,140,.55), transparent 55%),
+    linear-gradient(135deg,#2d0a56 0%, #4A148C 55%, #7127a4 100%)}
+.hero::after{content:"";position:absolute;inset:0;opacity:.1;
+  background-image:radial-gradient(circle at 1px 1px, #fff 1px, transparent 0);background-size:26px 26px}
+.hero-in{position:relative;padding:26px 0 24px;display:flex;flex-direction:column;gap:18px}
+.hero-top{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:14px}
+.logo-badge{display:flex;align-items:center;padding:0}
+.logo-badge img{height:46px;width:auto;display:block;filter:drop-shadow(0 2px 10px rgba(0,0,0,.35))}
+.brand .divider{width:1px;height:40px;background:rgba(255,255,255,.30)}
+.brand .t1{font-size:11px;letter-spacing:.22em;text-transform:uppercase;opacity:.78;font-weight:600}
+.brand .t2{font-size:20px;font-weight:800;margin-top:2px}
+.hero-meta{text-align:right;font-size:12.5px;opacity:.9}
+.hero-title h1{margin:0;font-size:clamp(24px,3.4vw,36px);font-weight:850;letter-spacing:-.02em}
+.hero-title p{margin:6px 0 0;font-size:14px;opacity:.9;max-width:760px}
+
+/* ---------- NAV ---------- */
+.nav{position:sticky;top:0;z-index:60;background:rgba(255,255,255,.93);backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line)}
+.nav-in{display:flex;gap:6px;align-items:center;overflow-x:auto;padding:9px 0}
+.nav a{white-space:nowrap;font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;padding:7px 13px;border-radius:999px;transition:.15s}
+.nav a:hover{color:var(--green);background:#f2eaf9}
+.nav .spacer{flex:1}
+
+/* ---------- BOTONES ---------- */
+button{font-family:inherit}
+.btn{cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--ink);font-size:13px;font-weight:650;
+  padding:7px 14px;border-radius:999px;transition:.15s;white-space:nowrap}
+.btn:hover{background:var(--soft);border-color:#d9c9e8}
+.btn.primary{background:var(--green);color:#fff;border-color:var(--green)}
+.btn.primary:hover{background:var(--green2)}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--muted)}
+.btn.ghost:hover{color:var(--rojo);background:#fbeceb}
+.btn.sm{font-size:12px;padding:5px 10px}
+
+/* ---------- SECCIONES / CARDS ---------- */
+section{padding:26px 0}
+.sec-head{display:flex;align-items:baseline;gap:12px;margin:0 0 14px;flex-wrap:wrap}
+.sec-head h2{margin:0;font-size:20px;font-weight:800;letter-spacing:-.01em}
+.sec-head .k{font-size:12.5px;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+.card h3{margin:0 0 3px;font-size:15px;font-weight:800}
+.card .sub{font-size:12px;color:var(--muted);margin:0 0 12px}
+.grid{display:grid;gap:16px}
+.two{grid-template-columns:1fr 1fr}
+.mixB{grid-template-columns:1.35fr 1fr}
+@media(max-width:1000px){.two,.mixB{grid-template-columns:1fr}}
+
+/* ---------- PANEL SUPUESTOS ---------- */
+details.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+details.panel>summary{cursor:pointer;list-style:none;padding:14px 18px;font-weight:800;font-size:15px;
+  display:flex;align-items:center;gap:10px;background:linear-gradient(180deg,#fbf8fd,#fff)}
+details.panel>summary::-webkit-details-marker{display:none}
+details.panel>summary .chev{transition:.2s;font-size:12px;color:var(--muted)}
+details.panel[open]>summary .chev{transform:rotate(90deg)}
+details.panel>summary .tag{margin-left:auto;font-size:11.5px;font-weight:650;color:var(--muted);text-transform:none}
+.panel-body{padding:4px 18px 18px;border-top:1px solid var(--line)}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:12px 18px;margin-top:14px}
+.fld{display:flex;flex-direction:column;gap:4px}
+.fld label{font-size:11.5px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:5px}
+.fld .u{font-weight:500;opacity:.75}
+.fld input,.fld select{border:1px solid var(--line);border-radius:9px;padding:7px 9px;font-size:13.5px;
+  font-family:inherit;color:var(--ink);background:#fff;width:100%}
+.fld input:focus,.fld select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(142,36,170,.15)}
+.subhead{font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--green2);
+  margin:18px 0 0;padding-top:14px;border-top:1px dashed var(--line)}
+.subhead:first-child{border-top:none;padding-top:0;margin-top:8px}
+.help{font-size:11.5px;color:var(--muted);font-style:italic;margin:6px 0 0}
+.info{cursor:help;display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;
+  border-radius:50%;background:#eadff4;color:var(--green2);font-size:9.5px;font-weight:800;font-style:normal}
+
+/* ---------- LOTES ---------- */
+.lote{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden}
+.lote-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:13px 16px;background:linear-gradient(180deg,#fbf8fd,#fff);border-bottom:1px solid var(--line)}
+.lote-head .nom{font-weight:800;font-size:15px;border:1px solid transparent;background:transparent;padding:4px 7px;border-radius:8px;min-width:150px;font-family:inherit;color:var(--ink)}
+.lote-head .nom:hover{border-color:var(--line);background:#fff}
+.lote-head .nom:focus{outline:none;border-color:var(--accent);background:#fff}
+.lh-fld{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);font-weight:650}
+.lh-fld select{border:1px solid var(--line);border-radius:8px;padding:5px 8px;font-size:12.5px;font-family:inherit;background:#fff;color:var(--ink)}
+.lote-head .sp{flex:1}
+.chip{font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:#f2eaf9;color:var(--green2);white-space:nowrap}
+
+.ztable{width:100%;border-collapse:collapse;font-size:13px}
+.ztable th,.ztable td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:center}
+.ztable th.rowlab,.ztable td.rowlab{text-align:left;font-weight:650;color:var(--muted);font-size:12.5px;
+  width:230px;position:sticky;left:0;background:#fff;z-index:2}
+.ztable thead th{background:var(--soft);font-size:12px;font-weight:800;color:var(--green2);border-bottom:1.5px solid #e0d4ec}
+.ztable thead th.rowlab{background:var(--soft)}
+.ztable input{width:100%;max-width:110px;border:1px solid var(--line);border-radius:8px;padding:5px 7px;
+  font-size:13px;text-align:center;font-family:inherit;color:var(--ink);background:#fff}
+.ztable input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(142,36,170,.15)}
+.ztable input.zname{font-weight:750;max-width:130px;text-align:center}
+.ztable tr.grp td{background:#fbf8fd;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;
+  color:var(--muted);text-align:left;padding:7px 8px}
+.tscroll{overflow-x:auto;padding:4px 16px 14px}
+.lote-foot{display:flex;gap:8px;align-items:center;padding:0 16px 14px;flex-wrap:wrap}
+
+/* ---------- RESULTADOS ---------- */
+.rtable{width:100%;border-collapse:collapse;font-size:13px}
+.rtable th,.rtable td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+.rtable th:first-child,.rtable td:first-child{text-align:left}
+.rtable th:nth-child(2),.rtable td:nth-child(2){text-align:left}
+.rtable thead th{background:var(--soft);font-size:11.5px;font-weight:800;color:var(--green2);
+  border-bottom:1.5px solid #e0d4ec;text-align:right;position:sticky;top:0}
+.rtable thead th:first-child,.rtable thead th:nth-child(2){text-align:left}
+.rtable tbody tr:hover{background:#faf7fd}
+.rtable tr.lotesum td{background:#f2eaf9;font-weight:800;border-top:1.5px solid #e0d4ec}
+.rtable td.strong{font-weight:800;color:var(--green)}
+.rtable input.adj{width:66px;border:1px solid #d9c9e8;border-radius:7px;padding:4px 6px;text-align:right;
+  font-size:13px;font-weight:750;font-family:inherit;background:#fbf8fd;color:var(--green)}
+.rtable input.adj:focus{outline:none;border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px rgba(142,36,170,.15)}
+.pill{display:inline-block;font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.pill.alta{background:#fdeceb;color:#b3392f}
+.pill.media{background:#fdf3e0;color:#96690c}
+.pill.baja{background:#e8f5e9;color:#6A1B9A}
+.pill.gris{background:#eceeeb;color:#6c6377}
+
+/* ---------- KPIs ---------- */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:12px}
+.kpi{background:var(--card);border-radius:14px;padding:15px 16px;box-shadow:var(--shadow);border:1px solid var(--line)}
+.kpi .n{font-size:26px;font-weight:850;letter-spacing:-.02em;line-height:1.05}
+.kpi .n small{font-size:14px;font-weight:700;opacity:.6;margin-left:2px}
+.kpi .l{font-size:11.5px;color:var(--muted);margin-top:6px;font-weight:650;text-transform:uppercase;letter-spacing:.03em}
+.kpi.accent .n{color:var(--green2)}
+.kpi.alert .n{color:var(--rojo)}
+.kpi.blue .n{color:var(--azul)}
+
+/* ---------- CHARTS ---------- */
+.chart-wrap{width:100%;overflow-x:auto}
+svg.chart{display:block;font-family:inherit}
+svg.chart text{font-family:inherit}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:12px;color:var(--muted);font-weight:650}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.selrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.selrow select{border:1px solid var(--line);border-radius:9px;padding:6px 10px;font-size:13px;font-family:inherit;background:#fff;color:var(--ink)}
+.selrow label{font-size:11.5px;font-weight:700;color:var(--muted)}
+
+/* ---------- NOTAS ---------- */
+.notas{font-size:13px;color:#332a3d}
+.notas h4{margin:16px 0 6px;font-size:13.5px;color:var(--green);font-weight:800}
+.notas h4:first-child{margin-top:0}
+.notas p{margin:5px 0}
+.notas code{background:#f5f0fa;border:1px solid var(--line);border-radius:6px;padding:1.5px 6px;font-size:12.5px;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#3d1470}
+.notas ul{margin:6px 0;padding-left:19px}
+.notas li{margin:3px 0}
+.foot{padding:24px 0 40px;text-align:center;font-size:12px;color:var(--muted)}
+.warn{background:#fdf6e6;border:1px solid #f0e0b8;border-radius:12px;padding:11px 14px;font-size:12.5px;color:#7a5c10;margin-top:14px}
+
+@media print{
+  .nav,.btn,.lote-foot,details.panel:not([open]){display:none!important}
+  body{background:#fff}
+  .card,.lote,details.panel{box-shadow:none;break-inside:avoid}
+  section{padding:12px 0}
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap hero-in">
+    <div class="hero-top">
+      <div class="brand">
+        <div class="logo-badge"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA10AAAEiCAYAAAACkLhiAABh9UlEQVR4nO3dd5wb9Z3/8ddnRtLuete9YWN6r6Y3gzGmGkxzgLS7NHLJLxWSS3LJpVxyySWX5EII6bn05AihGkwxvVdTQgu9Y4Np7tukmc/vj5G8i2PMjlZalX0/eQiv1/MdfSSNRvPR9/v9fEFEREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREGsDi//vLCbWOQUREREREpOmsvP7GXV44+sQHnttlv6W1jkVERERERKSpLP7Cl76/eLs9/OVt9vRnd92ns9bxiIiIiIg0sqDWAUj9eOUXv333i3vNXhZedOXnMnFEQB6w1bWOS0RERESkkSnpEpZfedX2zx9x3GP84KyzsytfG4NFADgGjtc4PBERERGRhpapdQBSOyvu/dvkNT/6+Q87P/1v7865AzGRBWQjJ7ZkG8OtpkGKiIiIiDQ4JV3D1OKPnv6zznd96GMBEVbsy3IzMnFMbP3yLCesTYQiIiIiIs1BwwuHmVd//+eZL0zfb3n2uhs+FnhfwgWAF4cUvol6ukREREREBkNJ1zCx8vZFY5a85wN/ir79gxtzXZ2jax2PiIiIiMhwoeGFTW7lI4+NXvn9M7+z6gMf+VgmdtxinAAGXh9DPV0iIiIiIoOgpKuJLf3P//7YipP+6WetPb1ExT5NcyNFwiUiIiIiIoOk4YVN6NWf/fq45w6Y9aj96S8/a+3tGeysLPV0iYiIiIgMgnq6msjKO++dtPLfvnJ1fOaPd21ziM3wYmkMK79zS0mXiIiIiMggKOlqEi99+b8+vfKDp/4oW3BwiAFzx4r/eXGVY2VQIiIiIiJDS8MLG9yrZ/7svc/vPetFzjv3R5lCtHa6Vv/kyou/LDPhUp4mIiIiIjIISroa1Ktn/2XGcwcc+nj801/+ObvijY0zsRF4qqqEA6WkS0RERERkEJR0NZiVt9059sXjT7ko/o/v3tL66mvbAAQeEllfj1aFKekSERERERkEzelqIC+e9vmvrzj1o1/I5cO2N1fGiJUZiYiIiIjUKfV0NYBXf/enWUv2PnipLbzmP1rytGGFobx75XMiIiIiIoOgpKuOvXHDzZu8ePSJV8XfOeP6YPmKSZnYiQNwUx4kIiIiItIoNLywDq28/a5xq3788zN7PvLpf856DPR1Nw1ivS0REREREakBJV11Zslpn/vW6g989MuhO7gyLBERERGRRqfhhXVi6Zk//ecXp++3Krji6i+HseMW68UREREREWkCuq6vsdcvu3yHZ2Yc8Yj/7Jd/zK3p6TAHwwliq04BeBERERERGVIaXlhDL/+/087o/uxXPtPmDhhxEGNeheWNRURERESkZtTTVQNLv/ujUxfvuvcKv+7mz+TiCIgJYyPQHC4RERERkaajpGsIvXrWz9/9/J4zO/03v/11pis/KvSYGMPciC0mVil4EREREZGmo6RrCCy75MptXjzk6MfjH//87JZVy9sCN8BxHNbeTOXgRURERESakOZ0VdkL/++0Mzq/8IXPZKIACHFiVCJDRERERGT4UE9Xlbz8gx++67ndDoxz193wmWxkmMUYEWFsOBpGKCIiIiIyXCjpqpIX/3Tun/C84UZMDIBjxFYaTtgwGipYEREREZF6o+GFVbKqpzezEhjb3sLEvJPr7cFxDCNZiUu5jIiIiIjIcKCkq1osGUS4vKfAytAY39bG2EKesFAA1wBDEREREZHhQsMLq8WtVJSQOIp5Ld/L84HR1dZGHARgEDhY8T8wVL5QRERERKT5qKer2voteNwZO89F3YxsyTIhNnK9vZTKajhJElaHaVcdhiQiIiIi0jiUdA2RyCB0cAJW5SNWG4xtzTGu4GQKBQJPFkdWZ5eIiIiISHNR0jVEAjfiYqdRUkQj4PV8xMoQxrblGNMbkSkU+hXbUPYlIiIiItIMNKdryHhp5lYyi8uT0vFRwXmlt5dnM87K1hwelOZ2BcWta07Zn4iIiIjIICjpqrEoALeAQh5eiAosbmkhn81iFqN8R0RERESk8SnpqjFzJ3AnMsfcWVnI85QZr7W2EmXCWocHyvxERERERAZFSVfNWamyPJAU0oijiKX5PE+HIctbW/AgIDbr10JERERERBqFCmnUsXwUsQRjWS7DRrHRks8XU7QhrS2vni4RERERkUFQT1cdM5I1lnvyMU97gcVtOXqyOeKh7etS0iUiIiIiMghKuupYsmCyEwVO4AGrews86wVeb2vDw2InpVEsMV8aoCgiIiIiIvVESVedc5IK8k6M48QOr/f08HQOOltaiQmSdb+sav1f6ukSERERERkEJV0N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" alt="Opuntia"></div>
+        <div class="divider"></div>
+        <div>
+          <div class="t1">Opuntia Technology</div>
+          <div class="t2">Agricultura digital</div>
+        </div>
+      </div>
+      <div class="hero-meta">
+        <b id="fechaHoy">—</b>
+        Suri Yaco · Maíz<br>Santiago del Estero y Chaco
+      </div>
+    </div>
+    <div class="hero-title">
+      <h1>Tablero de fertilización nitrogenada en maíz</h1>
+      <p>Demanda, oferta y dosis de N por zona de manejo, con tres criterios en paralelo: umbral de N disponible por quintal, balance oferta–demanda y óptimo económico según relación de precios. Cargado con el catálogo de lotes y la rotación histórica de Suri Yaco.</p>
+    </div>
+  </div>
+</header>
+
+<nav class="nav"><div class="wrap nav-in">
+  <a href="#supuestos">Supuestos</a>
+  <a href="#lotes">Lotes y zonas</a>
+  <a href="#resultados">Resultados</a>
+  <a href="#graficos">Gráficos</a>
+  <a href="#resumen">Resumen</a>
+  <a href="#metodo">Metodología</a>
+  <span class="spacer"></span>
+  <button class="btn sm" onclick="window.print()">Imprimir / PDF</button>
+</div></nav>
+
+<section id="supuestos"><div class="wrap">
+  <div class="sec-head"><h2>Supuestos del modelo</h2>
+    <span class="k">Todos los coeficientes son editables — los valores por defecto son referencias para maíz tardío del Chaco semiárido</span></div>
+
+  <details class="panel" open><summary><span class="chev">▶</span> Coeficientes agronómicos y económicos <span class="tag">abrir / cerrar</span></summary>
+  <div class="panel-body">
+
+    <div class="subhead">Demanda del cultivo</div>
+    <div class="pgrid">
+      <div class="fld"><label>Requerimiento unitario de N <span class="u">kg N / tn grano</span>
+        <span class="info" title="N total absorbido por tonelada de grano producido. Maíz: 19–25; valor usual 22.">?</span></label>
+        <input type="number" step="0.5" id="p_RU" value="22"></div>
+      <div class="fld"><label>Coeficiente de N disponible <span class="u">kg N / qq</span>
+        <span class="info" title="Umbral de N disponible (N-NO3 0-60 cm + fertilizante) por quintal de rinde objetivo. Temprano 2,0–2,2; tardío/2da 1,7–1,9.">?</span></label>
+        <input type="number" step="0.05" id="p_coef" value="1.85"></div>
+      <div class="fld"><label>Eficiencia de recuperación del N fertilizante <span class="u">%</span>
+        <span class="info" title="Recuperación aparente del N aplicado. 45–65% según fuente, momento y suelo. En suelos arenosos del NEA con lluvias intensas, usar el rango bajo.">?</span></label>
+        <input type="number" step="1" id="p_eur" value="55"></div>
+      <div class="fld"><label>Criterio base para el óptimo técnico
+        <span class="info" title="Dosis que se toma como techo de la curva de respuesta y punto de partida del cálculo económico.">?</span></label>
+        <select id="p_base">
+          <option value="prom" selected>Promedio de ambos criterios</option>
+          <option value="bal">Balance oferta–demanda</option>
+          <option value="umb">Umbral de N disponible</option>
+          <option value="max">El mayor de ambos</option>
+        </select></div>
+    </div>
+
+    <div class="subhead">Oferta del suelo</div>
+    <div class="pgrid">
+      <div class="fld"><label>Densidad aparente 0–20 cm <span class="u">g/cm³</span></label>
+        <input type="number" step="0.01" id="p_dap1" value="1.25"></div>
+      <div class="fld"><label>Densidad aparente 20–60 cm <span class="u">g/cm³</span></label>
+        <input type="number" step="0.01" id="p_dap2" value="1.35"></div>
+      <div class="fld"><label>N orgánico como fracción de la MO <span class="u">kg N / kg MO</span>
+        <span class="info" title="La MO tiene ~58% de C; con relación C/N de 11–12 el N representa ~5% de la MO.">?</span></label>
+        <input type="number" step="0.001" id="p_fNMO" value="0.05"></div>
+      <div class="fld"><label>Mineralización en el ciclo <span class="u">% del N orgánico</span>
+        <span class="info" title="Fracción del N orgánico de 0-20 cm que se mineraliza durante el ciclo del cultivo, después del muestreo. Templado 1,5–2%; NEA cálido 2–3%.">?</span></label>
+        <input type="number" step="0.1" id="p_kmin" value="2.2"></div>
+      <div class="fld"><label>Factor de mineralización · maíz tardío <span class="u">×</span>
+        <span class="info" title="El maíz tardío atraviesa un período más cálido y largo: mayor mineralización acumulada, pero también mayor riesgo de lavado.">?</span></label>
+        <input type="number" step="0.05" id="p_fTardio" value="1.15"></div>
+      <div class="fld"><label>Incluir mineralización en el criterio de umbral</label>
+        <select id="p_incMinUmb"><option value="0" selected>No · sólo N-NO₃ 0–60 (clásico)</option>
+          <option value="1">Sí · N-NO₃ + mineralización</option></select></div>
+    </div>
+
+    <div class="subhead">Aporte del antecesor <span class="u" style="font-weight:600;text-transform:none;letter-spacing:0">— crédito (+) o inmovilización (−) de N, en kg N/ha</span></div>
+    <div class="pgrid" id="antGrid"></div>
+
+    <div class="subhead">Precios y fertilizantes</div>
+    <div class="pgrid">
+      <div class="fld"><label>Precio del grano de maíz <span class="u">US$ / tn</span>
+        <span class="info" title="Precio neto puesto en zona, descontando flete y gastos de comercialización.">?</span></label>
+        <input type="number" step="1" id="p_pgrano" value="160"></div>
+      <div class="fld"><label>Fuente nitrogenada</label>
+        <select id="p_fuenteN">
+          <option value="urea" selected>Urea granulada (46-0-0)</option>
+          <option value="uan">UAN 32%</option>
+          <option value="can">CAN / Nitrodoble (27%)</option>
+          <option value="sam">Sulfato de amonio (21-0-0-24S)</option>
+        </select></div>
+      <div class="fld"><label>Precio del fertilizante nitrogenado <span class="u">US$ / tn puesta en lote</span></label>
+        <input type="number" step="5" id="p_pfertN" value="640"></div>
+      <div class="fld"><label>Costo del N <span class="u">US$ / kg N</span></label>
+        <input type="number" id="p_pN" value="1.39" readonly style="background:#faf7fd;font-weight:750"></div>
+      <div class="fld"><label>Relación de precios <span class="u">kg grano / kg N</span>
+        <span class="info" title="Cuántos kilos de maíz hay que producir de más para pagar un kilo de N. Es el umbral de respuesta marginal que define el óptimo económico.">?</span></label>
+        <input type="number" id="p_RPview" readonly style="background:#faf7fd;font-weight:750"></div>
+      <div class="fld"><label>Fertilizante arrancador fosforado</label>
+        <select id="p_fuenteP">
+          <option value="map" selected>MAP (11-52-0)</option>
+          <option value="sfa">Superfosfato triple (0-46-0)</option>
+          <option value="dap">DAP (18-46-0)</option>
+        </select></div>
+      <div class="fld"><label>Precio del arrancador <span class="u">US$ / tn puesta en lote</span></label>
+        <input type="number" step="5" id="p_pfertP" value="1080"></div>
+      <div class="fld"><label>Descontar el N del arrancador de la dosis
+        <span class="info" title="El MAP o el DAP aportan N que forma parte de la oferta. Si se descuenta, la dosis de urea se ajusta hacia abajo.">?</span></label>
+        <select id="p_descArr"><option value="1" selected>Sí</option><option value="0">No</option></select></div>
+    </div>
+
+    <div class="subhead">Fósforo y azufre</div>
+    <div class="pgrid">
+      <div class="fld"><label>Umbral crítico de P Bray-1 <span class="u">ppm</span>
+        <span class="info" title="Nivel por debajo del cual la respuesta a P es probable. Maíz: 13–18 ppm en 0-20 cm.">?</span></label>
+        <input type="number" step="0.5" id="p_umbP" value="15"></div>
+      <div class="fld"><label>Extracción de P en grano <span class="u">kg P₂O₅ / tn</span></label>
+        <input type="number" step="0.1" id="p_extP" value="8"></div>
+      <div class="fld"><label>Factor de reposición de P <span class="u">×</span>
+        <span class="info" title="Proporción de la extracción que se repone cuando el suelo está por encima del umbral.">?</span></label>
+        <input type="number" step="0.05" id="p_fRepP" value="0.8"></div>
+      <div class="fld"><label>Corrección por ppm faltante <span class="u">kg P₂O₅ / ppm</span>
+        <span class="info" title="Cuánto P₂O₅ hace falta para subir 1 ppm de P Bray en 0-20 cm. Suele estar entre 4 y 7 kg según textura y capacidad de fijación.">?</span></label>
+        <input type="number" step="0.5" id="p_kBuild" value="5"></div>
+      <div class="fld"><label>Fracción de la corrección a aplicar este año <span class="u">×</span></label>
+        <input type="number" step="0.05" id="p_fCorrP" value="0.35"></div>
+      <div class="fld"><label>Umbral crítico de S-SO₄ <span class="u">ppm</span>
+        <span class="info" title="0-20 cm. Por debajo de 8-10 ppm la respuesta a azufre es probable, sobre todo en suelos de baja MO y alta producción.">?</span></label>
+        <input type="number" step="0.5" id="p_umbS" value="10"></div>
+      <div class="fld"><label>Dosis de S por tn de rinde objetivo <span class="u">kg S / tn</span></label>
+        <input type="number" step="0.5" id="p_dosS" value="1.5"></div>
+    </div>
+
+    <div class="help">Los valores por defecto son referencias de partida para maíz tardío en el Chaco semiárido (Sachayoj y Ahí Veremos en Santiago del Estero, Las Piedritas y El Desierto en Chaco). Ajustalos con los datos de tu red de ensayos, de la historia del lote y del laboratorio con el que trabajás.</div>
+  </div></details>
+</div></section>
+
+<section id="lotes"><div class="wrap">
+  <div class="sec-head"><h2>Lotes y zonas de manejo</h2>
+    <span class="k">Hasta 4 zonas por lote · cargá rinde objetivo y análisis de suelo por zona</span></div>
+  <div class="card" style="margin-bottom:16px">
+    <h3>Catálogo de lotes de Suri Yaco</h3>
+    <p class="sub">Rotación real por lote. El antecesor se deriva de la secuencia: cultivo de invierno de la campaña, o cultivo de verano anterior si el invierno fue barbecho químico.</p>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding:9px 12px;
+                background:var(--soft);border:1px solid var(--line);border-radius:11px;font-size:12.5px">
+      <span id="syEstado"></span>
+      <span style="flex:1"></span>
+      <button class="btn sm" onclick="syActualizar(false)">Actualizar desde la planilla</button>
+      <button class="btn ghost sm" onclick="document.getElementById('syOrigen').open=!document.getElementById('syOrigen').open">Origen de datos</button>
+    </div>
+    <details id="syOrigen" style="margin:-4px 0 12px">
+      <summary style="cursor:pointer;font-size:12px;font-weight:700;color:var(--muted);list-style:none"></summary>
+      <div class="pgrid" style="margin-top:2px">
+        <div class="fld" style="grid-column:span 2"><label>Planilla de Google · URL o ID</label>
+          <input type="text" id="syId" value="1-RsBaDYylj0vnJin_ceKY6f2CJHUBl6yF-8K2B5zXVE"></div>
+        <div class="fld"><label>Hoja</label><input type="text" id="syHoja" value="Rotación"></div>
+      </div>
+      <p class="help">La planilla tiene que estar compartida como <b>cualquiera con el enlace puede ver</b>. Se leen las columnas CAMPO, LOTE, SUP., CAMPAÑA, OT&nbsp;-&nbsp;INV. y PRIM-VER; el orden no importa. Cambiando estos dos campos el mismo tablero sirve para otro cliente.</p>
+    </details>
+    <div class="selrow">
+      <label>Campaña</label><select id="syCamp" onchange="syLista()"></select>
+      <label>Campo</label><select id="syCampo" onchange="syLista()"></select>
+      <label>Cultivo de verano</label>
+      <select id="syCult" onchange="syLista()">
+        <option value="Ma&iacute;z" selected>S&oacute;lo ma&iacute;z</option>
+        <option value="">Todos los cultivos</option>
+      </select>
+      <label>Zonas por lote</label>
+      <select id="syZonas"><option>1</option><option>2</option><option selected>3</option><option>4</option></select>
+      <label>Rinde objetivo de referencia &middot; tn/ha</label>
+      <input type="number" step="0.5" id="syRinde" value="7.5"
+        style="width:78px;border:1px solid var(--line);border-radius:9px;padding:6px 8px;font-family:inherit;font-size:13px">
+      <span class="sp" style="flex:1"></span>
+      <button class="btn sm" onclick="syMarcar(true)">Marcar todos</button>
+      <button class="btn sm" onclick="syMarcar(false)">Ninguno</button>
+      <button class="btn primary sm" onclick="syAgregar()">Agregar seleccionados</button>
+    </div>
+    <div style="overflow-x:auto;max-height:340px;overflow-y:auto"><table class="rtable" id="syTabla"></table></div>
+    <p class="help">El rinde objetivo se reparte &plusmn;15&nbsp;% entre las zonas para representar los ambientes del lote: es un punto de partida, revisalo con los mapas de rinde y de suelos antes de decidir la dosis.</p>
+  </div>
+
+  <div id="lotesCont"></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+    <button class="btn primary" onclick="addLote()">+ Agregar lote en blanco</button>
+    <button class="btn" onclick="labEjemplo()" title="Rellena sólo las celdas vacías con valores plausibles de la zona, para ver el tablero funcionando. Reemplazalos por los resultados reales del laboratorio.">Completar laboratorio con valores de ejemplo</button>
+    <button class="btn ghost" onclick="limpiarTodo()">Vaciar todo</button>
+  </div>
+</div></section>
+
+<section id="resultados" style="background:linear-gradient(180deg,#eae2f2,#f1edf5)"><div class="wrap">
+  <div class="sec-head"><h2>Demanda, oferta y dosis por zona</h2>
+    <span class="k">La <b>dosis a aplicar</b> es editable: escribí tu decisión y el tablero recalcula rinde esperado, costo y margen</span></div>
+
+  <div class="kpis" id="kpisTop" style="margin-bottom:16px"></div>
+
+  <div class="card" style="padding:14px 0 4px">
+    <div style="overflow-x:auto"><table class="rtable" id="tablaRes"></table></div>
+    <div style="padding:10px 18px 12px" class="help" id="notaTabla"></div>
+  </div>
+</div></section>
+
+<section id="graficos"><div class="wrap">
+  <div class="sec-head"><h2>Gráficos</h2><span class="k">Comparación de criterios, balance de N y curva de respuesta</span></div>
+
+  <div class="grid mixB">
+    <div class="card">
+      <h3>Dosis de N según criterio</h3>
+      <p class="sub">Cada zona con los tres criterios en paralelo y la dosis finalmente decidida</p>
+      <div class="chart-wrap" id="chDosis"></div>
+      <div class="legend">
+        <span><i style="background:#00897B"></i>Umbral N disponible</span>
+        <span><i style="background:#1565C0"></i>Balance oferta–demanda</span>
+        <span><i style="background:#E8A21A"></i>Óptimo económico</span>
+        <span><i style="background:#6A1B9A"></i>Dosis a aplicar</span>
+      </div>
+    </div>
+    <div class="card">
+      <h3>De dónde sale el N</h3>
+      <p class="sub">Oferta del suelo apilada contra la demanda del rinde objetivo (línea)</p>
+      <div class="chart-wrap" id="chBalance"></div>
+      <div class="legend">
+        <span><i style="background:#4A148C"></i>N-NO₃ inicial 0–60</span>
+        <span><i style="background:#7B3FB5"></i>Mineralización</span>
+        <span><i style="background:#B08BD4"></i>Antecesor</span>
+        <span><i style="background:#E8A21A"></i>N del fertilizante recuperado</span>
+        <span><i style="background:#D6483F;border-radius:50%"></i>Demanda</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <div class="selrow">
+      <label for="selZona">Curva de respuesta al N</label>
+      <select id="selZona" onchange="render()"></select>
+    </div>
+    <div class="grid two">
+      <div>
+        <div class="chart-wrap" id="chResp"></div>
+        <div class="legend">
+          <span><i style="background:#6A1B9A"></i>Rinde esperado</span>
+          <span><i style="background:#E8A21A"></i>Óptimo económico</span>
+          <span><i style="background:#1565C0"></i>Óptimo técnico</span>
+        </div>
+      </div>
+      <div>
+        <div class="chart-wrap" id="chMargen"></div>
+        <div class="legend">
+          <span><i style="background:#1565C0"></i>Margen del N (ingreso extra − costo del N)</span>
+        </div>
+      </div>
+    </div>
+    <div id="zonaDetalle"></div>
+  </div>
+</div></section>
+
+<section id="resumen" style="background:linear-gradient(180deg,#eae2f2,#f1edf5)"><div class="wrap">
+  <div class="sec-head"><h2>Resumen y valor de la dosis variable</h2>
+    <span class="k">Qué cambia entre fertilizar por zona y aplicar una dosis uniforme por lote</span></div>
+  <div class="grid two">
+    <div class="card">
+      <h3>Plan de fertilización</h3>
+      <p class="sub">Producto, superficie y costo por lote</p>
+      <div style="overflow-x:auto"><table class="rtable" id="tablaPlan"></table></div>
+    </div>
+    <div class="card">
+      <h3>Dosis variable vs. dosis uniforme</h3>
+      <p class="sub">La dosis uniforme se calcula con el mismo criterio sobre el promedio ponderado del lote</p>
+      <div style="overflow-x:auto"><table class="rtable" id="tablaVR"></table></div>
+      <div class="help" style="padding:10px 2px 0">La ganancia de la dosis variable no está sólo en el ahorro de fertilizante: es la suma de lo que se deja de gastar donde el suelo ya provee N y lo que se deja de perder donde el N faltaba.</div>
+    </div>
+  </div>
+</div></section>
+
+<section id="metodo"><div class="wrap">
+  <div class="sec-head"><h2>Metodología</h2><span class="k">Qué calcula cada número</span></div>
+  <div class="card notas">
+
+    <h4>1 · Oferta de N del suelo</h4>
+    <p><code>N-NO₃ (kg/ha) = ppm × dap × espesor(cm) / 10</code> — sumando 0–20 y 20–60 cm.</p>
+    <p><code>N mineralizado = MO% × masa de suelo 0–20 × fracción N de la MO × tasa de mineralización</code>, con la tasa corregida por fecha de siembra. Es una estimación: si contás con Nan (N anaeróbico) de laboratorio conviene reemplazarla por una calibración local.</p>
+    <p><code>Oferta total = N-NO₃ (0–60) + N mineralizado + aporte del antecesor</code></p>
+
+    <h4>2 · Criterio de balance oferta–demanda</h4>
+    <p><code>Demanda = rinde objetivo (tn) × requerimiento unitario (kg N/tn)</code></p>
+    <p><code>Dosis = (Demanda − Oferta) / eficiencia de recuperación</code></p>
+    <p>Es el criterio más explícito: separa lo que el cultivo necesita de lo que el suelo entrega, y castiga la dosis por la ineficiencia de recuperación del fertilizante. Es sensible al requerimiento unitario y a la eficiencia asumidos.</p>
+
+    <h4>3 · Criterio de umbral de N disponible por quintal</h4>
+    <p><code>Dosis = coeficiente (kg N/qq) × rinde objetivo (qq) − N-NO₃ (0–60)</code></p>
+    <p>Es el modelo calibrado clásico de la Argentina: el N del fertilizante se computa uno a uno junto al del suelo porque la ineficiencia ya está incluida en el coeficiente. Por eso, para un mismo lote, suele dar dosis distintas al balance — y esa diferencia es información, no un error.</p>
+
+    <h4>4 · Óptimo económico</h4>
+    <p>Sobre una función de respuesta cuadrática con meseta, donde el óptimo técnico define la meseta y la respuesta máxima es la brecha entre el rinde objetivo y el rinde alcanzable sólo con la oferta del suelo:</p>
+    <p><code>Rinde(N) = Y₀ + Rmax × (2x − x²)</code>, con <code>x = N / N técnico</code></p>
+    <p>La dosis óptima económica iguala el ingreso marginal al costo marginal del N:</p>
+    <p><code>N óptimo = N técnico × [1 − RP × N técnico / (2000 × Rmax)]</code>, con <code>RP = costo del kg de N / precio del kg de grano</code></p>
+    <p>Cuando la relación de precios se estira, el óptimo económico se separa del técnico: ahí es donde la decisión deja de ser agronómica y pasa a ser de negocio.</p>
+    <p>El rinde alcanzable sin fertilizar (Y₀) y la respuesta máxima salen del marco del balance: <code>Y₀ = oferta / requerimiento unitario</code>, acotado por el rinde objetivo. Por eso, si elegís el umbral como criterio base, el óptimo económico se lee más conservador que la dosis del umbral — es la misma tensión entre los dos modelos, ahora expresada en dólares.</p>
+
+    <h4>5 · Fósforo y azufre</h4>
+    <p>Si P Bray está sobre el umbral, se repone una fracción de la extracción del rinde objetivo. Si está por debajo, se suma una corrección parcial hacia el umbral. El N que aporta el arrancador se descuenta de la dosis nitrogenada. La sugerencia de S se activa por debajo del umbral y es orientativa: conviene contrastarla con ensayos locales.</p>
+
+    <h4>6 · Origen de los lotes</h4>
+    <p>El catálogo de lotes, superficies y rotaciones se lee en vivo de la hoja <b>Rotación</b> de la planilla de planificación de Suri Yaco, cada vez que se abre el tablero. El archivo lleva además una copia embebida de esa hoja: si no hay conexión o la planilla no está compartida, el tablero sigue funcionando con esa copia y lo avisa en el encabezado del catálogo. Lo que se lee es la rotación, no los análisis: las variables de laboratorio se cargan a mano.</p>
+
+    <h4>7 · Alcance</h4>
+    <p>El tablero ordena la decisión y hace explícitos los supuestos; no reemplaza la calibración regional. Los coeficientes por defecto son referencias de partida para maíz tardío del Chaco semiárido y deberían ajustarse con la red de ensayos y la historia de cada campo. Nada acá contempla el riesgo hídrico, que en el NEA suele explicar más varianza de rinde que la fertilización: el rinde objetivo por zona es el lugar donde ese riesgo entra al cálculo.</p>
+
+    <div class="warn"><b>Sobre el rinde objetivo:</b> es el supuesto que más mueve la dosis en los tres criterios. Conviene fijarlo por zona a partir del historial de rendimiento (mapas de cosecha, NDVI, ambientes) y no del techo potencial, y hacer sensibilidad moviendo el objetivo ±1 tn/ha antes de cerrar la recomendación.</div>
+  </div>
+</div></section>
+
+<div class="foot">Opuntia Technology · Tablero de fertilización nitrogenada en maíz · Herramienta de apoyo a la decisión agronómica</div>
+
+<script>
+/* =========================================================================
+   TABLERO DE FERTILIZACIÓN NITROGENADA EN MAÍZ — NEA · Opuntia Technology
+   Modelo: umbral de N disponible / balance oferta-demanda / óptimo económico
+   ========================================================================= */
+
+/* ---------------- Catálogo de antecesores (crédito kg N/ha) -------------- */
+const ANTECESORES = [
+  ['soja',      'Soja',                              25],
+  ['garbanzo',  'Garbanzo',                          20],
+  ['poroto',    'Poroto / maní',                     22],
+  ['habamoha',  'Haba–Moha (CS con leguminosa)',     10],
+  ['cs_mix',    'CS mezcla con vicia',                5],
+  ['barbecho',  'Barbecho químico (Bb Qco)',         10],
+  ['girasol',   'Girasol',                            0],
+  ['camelina',  'Camelina',                          -5],
+  ['colza',     'Colza',                            -10],
+  ['algodon',   'Algodón',                          -10],
+  ['cartamo',   'Cártamo',                          -15],
+  ['maiz',      'Maíz',                             -15],
+  ['sorgo',     'Sorgo',                            -20],
+  ['trigo',     'Trigo',                            -20],
+  ['moha',      'Moha (CS)',                        -20],
+  ['avena',     'Avena (CS)',                       -20],
+  ['centeno',   'Centeno (CS)',                     -25]
+];
+
+/* Traducción del nombre del cultivo en la base de Suri Yaco al antecesor del modelo */
+const MAPA_CULT = {
+  'Soja':'soja', 'Maíz':'maiz', 'Garbanzo':'garbanzo', 'Trigo':'trigo', 'Colza':'colza',
+  'Girasol':'girasol', 'Cartamo':'cartamo', 'Camelina':'camelina', 'Bb Qco':'barbecho',
+  'Centeno':'centeno', 'Centeno (CS)':'centeno', 'Centeno A (CS)':'centeno', 'Centeno S (CS)':'centeno',
+  'Avena (CS)':'avena', 'Moha':'moha', 'Moha (CS)':'moha', 'CS (Moha)':'moha',
+  'CS (Moha+Centeno)':'centeno', 'CS (Centeno+Vicia)':'cs_mix', 'Hab - Moha':'habamoha'
+};
+
+const FUENTES_N = {
+  urea: {nom:'Urea granulada',      n:46, s:0,  precio:640},
+  uan:  {nom:'UAN 32%',             n:32, s:0,  precio:520},
+  can:  {nom:'CAN / Nitrodoble',    n:27, s:0,  precio:560},
+  sam:  {nom:'Sulfato de amonio',   n:21, s:24, precio:480}
+};
+const FUENTES_P = {
+  map: {nom:'MAP',                  n:11, p:52, precio:1080},
+  sfa: {nom:'Superfosfato triple',  n:0,  p:46, precio:820},
+  dap: {nom:'DAP',                  n:18, p:46, precio:1010}
+};
+
+let SY_ROWS=[["Baralle","AB01","20-21",295,"Bb Qco","Maíz"],["Baralle","AB01","21-22",295,"Bb Qco","Soja"],["Baralle","AB01","22-23",295,"Garbanzo","Maíz"],["Baralle","AB01","23-24",295,"Bb Qco","Soja"],["Baralle","AB01","24-25",295,"Bb Qco","Maíz"],["Baralle","AB01","25-26",295,"Centeno (CS)","Soja"],["Baralle","AB01","26-27",295,"Colza","Maíz"],["Baralle","AB02","20-21",295,"Bb Qco","Maíz"],["Baralle","AB02","21-22",295,"Bb Qco","Soja"],["Baralle","AB02","22-23",295,"Garbanzo","Maíz"],["Baralle","AB02","23-24",295,"Bb Qco","Soja"],["Baralle","AB02","24-25",295,"Bb Qco","Maíz"],["Baralle","AB02","25-26",295,"Centeno (CS)","Soja"],["Baralle","AB02","26-27",295,"Colza","Maíz"],["Campo Viejo","CV01","24-25",444,"Bb Qco","Soja"],["Campo Viejo","CV01","25-26",530,"Centeno (CS)","Soja"],["Campo Viejo","CV01","26-27",530,"Avena (CS)","Maíz"],["Campo Viejo","CV02","24-25",589,"Bb Qco","Maíz"],["Campo Viejo","CV02","25-26",588,"Bb Qco","Soja"],["Campo Viejo","CV02","26-27",588,"Centeno A (CS)","Maíz"],["Campo Viejo","CV03","24-25",276,"Bb Qco","Soja"],["Campo Viejo","CV03","25-26",340,"Centeno (CS)","Maíz"],["Campo Viejo","CV03","26-27",340,"Centeno A (CS)","Soja"],["Campo Viejo","CV04","24-25",402,"Bb Qco","Soja"],["Campo Viejo","CV04","25-26",395,"Centeno (CS)","Maíz"],["Campo Viejo","CV04","26-27",395,"Centeno A (CS)","Soja"],["Campo Viejo","CV05","25-26",126,"Hab - Moha","Maíz"],["Campo Viejo","CV05","26-27",126,"Centeno A (CS)","Soja"],["Carregio","EC01","20-21",174,"Trigo","Maíz"],["Carregio","EC01","21-22",174,"Bb Qco","Soja"],["Carregio","EC01","22-23",174,"Trigo","Maíz"],["Carregio","EC01","23-24",174,"Centeno (CS)","Soja"],["Carregio","EC01","24-25",97,"Trigo","Maíz"],["Carregio","EC01","24-25",77,"Trigo","Maíz"],["Carregio","EC01","25-26",175,"Bb Qco","Soja"],["Carregio","EC01","26-27",175,"Trigo","Maíz"],["Carregio","EC02","20-21",100,"Trigo","Maíz"],["Carregio","EC02","21-22",100,"Bb Qco","Soja"],["Carregio","EC02","22-23",100,"Trigo","Maíz"],["Carregio","EC02","23-24",100,"Centeno (CS)","Soja"],["Carregio","EC02","24-25",100,"Trigo","Maíz"],["Carregio","EC02","25-26",100,"Bb Qco","Soja"],["Carregio","EC02","26-27",100,"Trigo","Maíz"],["Carregio","EC03","25-26",90,"Trigo","Maíz"],["Carregio","EC03","26-27",90,"Centeno S (CS)","Soja"],["Carregio","JC01","20-21",366,"Trigo","Maíz"],["Carregio","JC01","21-22",366,"Bb Qco","Soja"],["Carregio","JC01","22-23",366,"Trigo","Maíz"],["Carregio","JC01","23-24",366,"Centeno (CS)","Soja"],["Carregio","JC01","24-25",366,"Trigo","Maíz"],["Carregio","JC01","25-26",366,"Bb Qco","Soja"],["Carregio","JC01","26-27",366,"Trigo","Maíz"],["El Desierto","ED01","25-26",166,"Bb Qco","Soja"],["El Desierto","ED01","26-27",166,"Cartamo","Maíz"],["El Desierto","ED02","25-26",202,"Bb Qco","Soja"],["El Desierto","ED02","26-27",202,"Cartamo","Maíz"],["El Desierto","ED03","25-26",230,"Bb Qco","Soja"],["El Desierto","ED03","26-27",230,"Cartamo","Maíz"],["El Desierto","ED04","25-26",56,"Bb Qco","Soja"],["El Desierto","ED04","26-27",56,"Cartamo","Maíz"],["El Desierto","ED05","25-26",134,"Bb Qco","Soja"],["El Desierto","ED05","26-27",134,"Cartamo","Maíz"],["El Desierto","ED06","25-26",230,"Bb Qco","Soja"],["El Desierto","ED06","26-27",230,"Trigo","Maíz"],["El Estribo","EE01","20-21",131,"Bb Qco","Soja"],["El Estribo","EE01","21-22",131,"Garbanzo","Maíz"],["El Estribo","EE01","22-23",131,"CS (Centeno+Vicia)","Soja"],["El Estribo","EE01","23-24",131,"Garbanzo","Maíz"],["El Estribo","EE01","24-25",131,"Bb Qco","Soja"],["El Estribo","EE01","25-26",131,"Trigo","Maíz"],["El Estribo","EE01","26-27",131,"Bb Qco","Soja"],["El Estribo","EE02","20-21",180,"Bb Qco","Soja"],["El Estribo","EE02","21-22",180,"Garbanzo","Maíz"],["El Estribo","EE02","22-23",180,"Centeno (CS)","Soja"],["El Estribo","EE02","23-24",180,"Garbanzo","Maíz"],["El Estribo","EE02","24-25",180,"Bb Qco","Soja"],["El Estribo","EE02","25-26",180,"Trigo","Maíz"],["El Estribo","EE02","26-27",180,"Bb Qco","Soja"],["El Estribo","EE03","20-21",115,"Bb Qco","Soja"],["El Estribo","EE03","21-22",115,"Garbanzo","Maíz"],["El Estribo","EE03","22-23",115,"Centeno (CS)","Soja"],["El Estribo","EE03","23-24",115,"Garbanzo","Maíz"],["El Estribo","EE03","24-25",115,"Bb Qco","Soja"],["El Estribo","EE03","25-26",115,"Centeno (CS)","Maíz"],["El Estribo","EE03","26-27",115,"Bb Qco","Soja"],["El Estribo","EE04","20-21",114,"Bb Qco","Soja"],["El Estribo","EE04","21-22",114,"Garbanzo","Maíz"],["El Estribo","EE04","22-23",114,"Centeno (CS)","Soja"],["El Estribo","EE04","23-24",114,"Garbanzo","Maíz"],["El Estribo","EE04","24-25",114,"Bb Qco","Soja"],["El Estribo","EE04","25-26",114,"Centeno (CS)","Maíz"],["El Estribo","EE04","26-27",114,"Bb Qco","Soja"],["El Estribo","EE05","20-21",94,"Bb Qco","Soja"],["El Estribo","EE05","21-22",94,"Garbanzo","Maíz"],["El Estribo","EE05","22-23",94,"Centeno (CS)","Soja"],["El Estribo","EE05","23-24",94,"Garbanzo","Maíz"],["El Estribo","EE05","24-25",94,"Bb Qco","Soja"],["El Estribo","EE05","25-26",94,"Centeno (CS)","Maíz"],["El Estribo","EE05","26-27",94,"Bb Qco","Soja"],["El Estribo","EE06","20-21",162,"Bb Qco","Soja"],["El Estribo","EE06","21-22",162,"Trigo","Maíz"],["El Estribo","EE06","22-23",162,"Bb Qco","Soja"],["El Estribo","EE06","23-24",162,"Trigo","Maíz"],["El Estribo","EE06","24-25",162,"Bb Qco","Soja"],["El Estribo","EE06","25-26",162,"Trigo","Maíz"],["El Estribo","EE06","26-27",162,"Bb Qco","Soja"],["El Estribo","EE07","20-21",125,"Bb Qco","Soja"],["El Estribo","EE07","21-22",125,"Trigo","Maíz"],["El Estribo","EE07","22-23",125,"Bb Qco","Soja"],["El Estribo","EE07","23-24",125,"Trigo","Maíz"],["El Estribo","EE07","24-25",125,"Bb Qco","Soja"],["El Estribo","EE07","25-26",125,"Centeno (CS)","Maíz"],["El Estribo","EE07","26-27",125,"Bb Qco","Soja"],["El Estribo","EE08A","20-21",82,"Bb Qco","Maíz"],["El Estribo","EE08A","21-22",82,"Bb Qco","Soja"],["El Estribo","EE08A","22-23",82,"Garbanzo","Maíz"],["El Estribo","EE08A","23-24",82,"Bb Qco","Soja"],["El Estribo","EE08A","24-25",82,"Bb Qco","Maíz"],["El Estribo","EE08A","25-26",82,"Centeno (CS)","Soja"],["El Estribo","EE08A","26-27",82,"Colza","Maíz"],["El Estribo","EE08B","20-21",71,"Bb Qco","Maíz"],["El Estribo","EE08B","21-22",71,"Bb Qco","Soja"],["El Estribo","EE08B","22-23",71,"Garbanzo","Maíz"],["El Estribo","EE08B","23-24",71,"Bb Qco","Soja"],["El Estribo","EE08B","24-25",71,"Bb Qco","Maíz"],["El Estribo","EE08B","25-26",71,"Trigo","Soja"],["El Estribo","EE08B","26-27",71,"Colza","Maíz"],["El Estribo","EE09A","20-21",68,"Bb Qco","Maíz"],["El Estribo","EE09A","21-22",68,"Bb Qco","Soja"],["El Estribo","EE09A","22-23",68,"Garbanzo","Maíz"],["El Estribo","EE09A","23-24",68,"Bb Qco","Soja"],["El Estribo","EE09A","24-25",68,"Bb Qco","Maíz"],["El Estribo","EE09A","25-26",68,"Centeno (CS)","Soja"],["El Estribo","EE09A","26-27",68,"Colza","Maíz"],["El Estribo","EE09B","20-21",51,"Bb Qco","Maíz"],["El Estribo","EE09B","21-22",51,"Bb Qco","Soja"],["El Estribo","EE09B","22-23",51,"Garbanzo","Maíz"],["El Estribo","EE09B","23-24",51,"Bb Qco","Soja"],["El Estribo","EE09B","24-25",51,"Bb Qco","Maíz"],["El Estribo","EE09B","25-26",51,"Centeno (CS)","Soja"],["El Estribo","EE09B","26-27",51,"Colza","Maíz"],["El Estribo","EE10A","20-21",58,"Bb Qco","Maíz"],["El Estribo","EE10A","21-22",58,"Bb Qco","Soja"],["El Estribo","EE10A","22-23",58,"Garbanzo","Maíz"],["El Estribo","EE10A","23-24",58,"Bb Qco","Soja"],["El Estribo","EE10A","24-25",58,"Bb Qco","Maíz"],["El Estribo","EE10A","25-26",58,"Centeno (CS)","Soja"],["El Estribo","EE10A","26-27",58,"Colza","Maíz"],["El Estribo","EE10B","20-21",46,"Bb Qco","Maíz"],["El Estribo","EE10B","21-22",46,"Bb Qco","Soja"],["El Estribo","EE10B","22-23",46,"Garbanzo","Maíz"],["El Estribo","EE10B","23-24",46,"Bb Qco","Soja"],["El Estribo","EE10B","24-25",46,"Bb Qco","Maíz"],["El Estribo","EE10B","25-26",46,"Centeno (CS)","Soja"],["El Estribo","EE10B","26-27",46,"Colza","Maíz"],["Grintur","GT01","20-21",330,"Bb Qco","Soja"],["Grintur","GT01","21-22",330,"Trigo","Maíz"],["Grintur","GT01","22-23",330,"Centeno (CS)","Soja"],["Grintur","GT01","23-24",330,"Trigo","Maíz"],["Grintur","GT01","24-25",330,"Bb Qco","Soja"],["Grintur","GT01","25-26",330,"Colza","Maíz"],["Grintur","GT01","26-27",330,"Centeno S (CS)","Soja"],["Grintur","GT02","20-21",322,"Bb Qco","Soja"],["Grintur","GT02","21-22",322,"Trigo","Maíz"],["Grintur","GT02","22-23",322,"Centeno (CS)","Soja"],["Grintur","GT02","23-24",322,"Trigo","Maíz"],["Grintur","GT02","24-25",322,"Bb Qco","Soja"],["Grintur","GT02","25-26",322,"Colza","Maíz"],["Grintur","GT02","26-27",322,"Centeno S (CS)","Soja"],["Grintur","GT03","20-21",322,"Bb Qco","Maíz"],["Grintur","GT03","21-22",322,"Bb Qco","Soja"],["Grintur","GT03","22-23",322,"Trigo","Maíz"],["Grintur","GT03","23-24",322,"Centeno (CS)","Soja"],["Grintur","GT03","24-25",322,"Garbanzo","Maíz"],["Grintur","GT03","25-26",322,"Bb Qco","Soja"],["Grintur","GT03","26-27",322,"Trigo","Maíz"],["Grintur","GT04","20-21",244,"Bb Qco","Maíz"],["Grintur","GT04","21-22",244,"Bb Qco","Soja"],["Grintur","GT04","22-23",244,"Trigo","Maíz"],["Grintur","GT04","23-24",244,"Centeno (CS)","Soja"],["Grintur","GT04","24-25",244,"Garbanzo","Maíz"],["Grintur","GT04","25-26",244,"Bb Qco","Soja"],["Grintur","GT04","26-27",244,"Trigo","Maíz"],["Leguizamón","RL01","23-24",60,"Bb Qco","Maíz"],["Leguizamón","RL01","24-25",60,"Bb Qco","Soja"],["Leguizamón","RL01","25-26",60,"Trigo","Soja"],["Leguizamón","RL01","26-27",60,"Girasol","Moha (CS)"],["Marin","HM01","20-21",156,"Bb Qco","Soja"],["Marin","HM01","21-22",156,"Garbanzo","Maíz"],["Marin","HM01","22-23",156,"CS (Centeno+Vicia)","Soja"],["Marin","HM01","23-24",156,"Garbanzo","Maíz"],["Marin","HM01","24-25",156,"Bb Qco","Soja"],["Marin","HM01","25-26",156,"Trigo","Maíz"],["Marin","HM01","26-27",156,"Bb Qco","Soja"],["Marin","HM02","20-21",149,"Bb Qco","Soja"],["Marin","HM02","21-22",149,"Trigo","Maíz"],["Marin","HM02","22-23",149,"Bb Qco","Soja"],["Marin","HM02","23-24",149,"Bb Qco","Maíz"],["Marin","HM02","24-25",149,"Bb Qco","Soja"],["Marin","HM02","25-26",149,"Trigo","Maíz"],["Marin","HM02","26-27",149,"Bb Qco","Soja"],["Marin","HM03","20-21",77,"Bb Qco","Maíz"],["Marin","HM03","21-22",77,"Bb Qco","Soja"],["Marin","HM03","22-23",77,"Garbanzo","Maíz"],["Marin","HM03","23-24",77,"Bb Qco","Soja"],["Marin","HM03","24-25",77,"Bb Qco","Maíz"],["Marin","HM03","25-26",77,"Trigo","Soja"],["Marin","HM03","26-27",77,"Colza","Maíz"],["Miró","RM01A","20-21",125,"Bb Qco","Soja"],["Miró","RM01A","21-22",125,"Bb Qco","Maíz"],["Miró","RM01A","22-23",125,"CS (Moha)","Soja"],["Miró","RM01A","23-24",125,"Bb Qco","Maíz"],["Miró","RM01A","24-25",125,"Bb Qco","Soja"],["Miró","RM01A","25-26",125,"Trigo","Maíz"],["Miró","RM01A","26-27",125,"Girasol","Moha (CS)"],["Miró","RM01B","20-21",47,"Bb Qco","Soja"],["Miró","RM01B","21-22",47,"Bb Qco","Maíz"],["Miró","RM01B","22-23",47,"CS (Moha)","Soja"],["Miró","RM01B","23-24",47,"Bb Qco","Maíz"],["Miró","RM01B","24-25",47,"Bb Qco","Soja"],["Miró","RM01B","25-26",47,"Trigo","Soja"],["Miró","RM01B","26-27",47,"Trigo","Maíz"],["Miró","RM02","21-22",145,"Bb Qco","Maíz"],["Miró","RM02","22-23",145,"CS (Moha)","Soja"],["Miró","RM02","23-24",200,"Bb Qco","Maíz"],["Miró","RM02","24-25",145,"Bb Qco","Soja"],["Miró","RM02","25-26",145,"Trigo","Soja"],["Miró","RM02","26-27",145,"Trigo","Maíz"],["Miró","RM03","24-25",41,"Bb Qco","Soja"],["Miró","RM03","25-26",40,"Trigo","Soja"],["Miró","RM03","26-27",40,"Trigo","Maíz"],["Miró","RM05","24-25",9,"Bb Qco","Soja"],["Miró","RM05","25-26",22,"Moha","Maíz"],["Miró","RM05","26-27",21,"Girasol","Moha (CS)"],["Miró","RM06","20-21",65,"Bb Qco","Soja"],["Miró","RM06","21-22",65,"Bb Qco","Maíz"],["Miró","RM06","22-23",65,"CS (Moha)","Soja"],["Miró","RM06","23-24",65,"Bb Qco","Maíz"],["Miró","RM06","24-25",65,"Bb Qco","Soja"],["Miró","RM06","25-26",65,"Trigo","Maíz"],["Miró","RM06","26-27",63,"Girasol","Moha (CS)"],["San Claudio","SC01","26-27",182,"Camelina","Maíz"],["San Claudio","SC01A","20-21",49,"Bb Qco","Soja"],["San Claudio","SC01A","21-22",49,"Bb Qco","Maíz"],["San Claudio","SC01A","22-23",49,"CS (Moha)","Soja"],["San Claudio","SC01A","23-24",49,"Trigo","Maíz"],["San Claudio","SC01A","24-25",49,"Bb Qco","Soja"],["San Claudio","SC01A","25-26",49,"Trigo","Soja"],["San Claudio","SC01B","20-21",133,"Centeno","Soja"],["San Claudio","SC01B","21-22",133,"Bb Qco","Maíz"],["San Claudio","SC01B","22-23",133,"CS (Moha+Centeno)","Soja"],["San Claudio","SC01B","23-24",133,"Trigo","Maíz"],["San Claudio","SC01B","24-25",133,"Bb Qco","Soja"],["San Claudio","SC01B","25-26",133,"Trigo","Soja"],["San Claudio","SC02A","20-21",114,"Bb Qco","Soja"],["San Claudio","SC02A","21-22",114,"Bb Qco","Maíz"],["San Claudio","SC02A","22-23",114,"CS (Moha)","Soja"],["San Claudio","SC02A","23-24",114,"Bb Qco","Maíz"],["San Claudio","SC02A","24-25",114,"Bb Qco","Soja"],["San Claudio","SC02A","25-26",95,"Trigo","Maíz"],["San Claudio","SC02A","26-27",95,"Girasol","Moha (CS)"],["San Claudio","SC02B","20-21",70,"Centeno","Soja"],["San Claudio","SC02B","21-22",70,"Bb Qco","Maíz"],["San Claudio","SC02B","22-23",70,"CS (Moha+Centeno)","Soja"],["San Claudio","SC02B","23-24",70,"Trigo","Maíz"],["San Claudio","SC02B","24-25",70,"Bb Qco","Soja"],["San Claudio","SC02B","25-26",90,"Trigo","Soja"],["San Claudio","SC02B","26-27",90,"Camelina","Maíz"],["San Claudio","SC03A","20-21",53,"Bb Qco","Soja"],["San Claudio","SC03A","21-22",53,"Bb Qco","Maíz"],["San Claudio","SC03A","22-23",53,"Centeno (CS)","Soja"],["San Claudio","SC03A","23-24",53,"Bb Qco","Maíz"],["San Claudio","SC03A","24-25",53,"Bb Qco","Soja"],["San Claudio","SC03A","25-26",53,"Colza","Maíz"],["San Claudio","SC03A","26-27",53,"Girasol","Moha (CS)"],["San Claudio","SC03B","20-21",38,"Bb Qco","Soja"],["San Claudio","SC03B","21-22",38,"Bb Qco","Maíz"],["San Claudio","SC03B","22-23",38,"Centeno (CS)","Soja"],["San Claudio","SC03B","23-24",38,"Bb Qco","Maíz"],["San Claudio","SC03B","24-25",38,"Bb Qco","Soja"],["San Claudio","SC03B","25-26",38,"Colza","Soja"],["San Claudio","SC03B","26-27",38,"Camelina","Moha (CS)"],["San Claudio","SC04","20-21",176,"Bb Qco","Soja"],["San Claudio","SC04","21-22",176,"Bb Qco","Maíz"],["San Claudio","SC04","22-23",176,"Centeno (CS)","Soja"],["San Claudio","SC04","23-24",176,"Bb Qco","Maíz"],["San Claudio","SC04","24-25",176,"Bb Qco","Soja"],["San Claudio","SC04","25-26",176,"Colza","Maíz"],["San Claudio","SC04","26-27",176,"Girasol","Moha (CS)"],["San Claudio","SC05","20-21",148,"Bb Qco","Soja"],["San Claudio","SC05","21-22",148,"Bb Qco","Maíz"],["San Claudio","SC05","22-23",148,"Bb Qco","Soja"],["San Claudio","SC05","23-24",148,"Bb Qco","Maíz"],["San Claudio","SC05","24-25",148,"Bb Qco","Soja"],["San Claudio","SC05","25-26",148,"Colza","Maíz"],["San Claudio","SC05","26-27",148,"Girasol","Moha (CS)"],["San Claudio","SC06","20-21",83,"Bb Qco","Soja"],["San Claudio","SC06","21-22",83,"Bb Qco","Maíz"],["San Claudio","SC06","22-23",83,"Bb Qco","Soja"],["San Claudio","SC06","23-24",83,"Bb Qco","Maíz"],["San Claudio","SC06","24-25",83,"Bb Qco","Soja"],["San Claudio","SC06","25-26",83,"Colza","Maíz"],["San Claudio","SC06","26-27",83,"Girasol","Moha (CS)"],["San Claudio","SC07","20-21",130,"Bb Qco","Soja"],["San Claudio","SC07","21-22",130,"Bb Qco","Maíz"],["San Claudio","SC07","22-23",130,"Bb Qco","Soja"],["San Claudio","SC07","23-24",130,"Bb Qco","Maíz"],["San Claudio","SC07","24-25",130,"Bb Qco","Soja"],["San Claudio","SC07","25-26",130,"Trigo","Maíz"],["San Claudio","SC07","26-27",130,"Girasol","Moha (CS)"],["San Claudio","SC08","21-22",46,"Bb Qco","Maíz"],["San Claudio","SC08","22-23",46,"Bb Qco","Soja"],["San Claudio","SC08","23-24",46,"Bb Qco","Maíz"],["San Claudio","SC08","24-25",46,"Bb Qco","Soja"],["San Claudio","SC08","25-26",45,"Trigo","Maíz"],["San Claudio","SC08","26-27",45,"Girasol","Moha (CS)"],["San Claudio","SC09","25-26",64,"Bb Qco","Moha (CS)"],["San Claudio","SC09","26-27",64,"Colza","Maíz"]];
+
+/* ---- Origen de datos: planilla de planificación de Suri Yaco ---- */
+const SY_FUENTE = {
+  id: '1-RsBaDYylj0vnJin_ceKY6f2CJHUBl6yF-8K2B5zXVE',
+  hoja: 'Rotaci\u00f3n',
+  nombre: 'SY - Planif_1.1',
+  snapshot: '7 de septiembre de 2026'
+};
+
+/* ---- Índice: campo|lote -> {campaña: {ha, oi, pv}} ---- */
+function construirSY(rows){
+  const campos = {}, campanas = new Set();
+  rows.forEach(([campo, lote, camp, ha, oi, pv]) => {
+    if (!campo || !lote || !camp) return;
+    campanas.add(camp);
+    const k = campo + '|' + lote;
+    (campos[k] = campos[k] || {campo, lote, hist:{}}).hist[camp] = {ha, oi, pv};
+  });
+  return {lotes: Object.values(campos), campanas: [...campanas].sort()};
+}
+let SY = construirSY(SY_ROWS);
+let SY_ESTADO = {origen: 'local', filas: SY_ROWS.length, hora: null, error: null};
+
+/* ---- Lectura en vivo de la planilla (JSONP sobre el endpoint gviz de Google) ----
+   Se usa JSONP y no fetch porque el tablero se abre como archivo local: el navegador
+   bloquearía una petición cruzada normal. Requiere que la planilla esté compartida
+   como "cualquiera con el enlace puede ver". Si falla, queda la copia embebida. */
+function syDescargar(cb){
+  const id = ($('syId') && $('syId').value.trim()) || SY_FUENTE.id;
+  const hoja = ($('syHoja') && $('syHoja').value.trim()) || SY_FUENTE.hoja;
+  const m = id.match(/\/d\/([a-zA-Z0-9-_]{20,})/);        // acepta pegar la URL completa
+  const sheetId = m ? m[1] : id;
+  const fn = '__syCB' + Math.random().toString(36).slice(2);
+  const url = 'https://docs.google.com/spreadsheets/d/' + sheetId + '/gviz/tq'
+    + '?tqx=' + encodeURIComponent('out:json;responseHandler:' + fn)
+    + '&sheet=' + encodeURIComponent(hoja) + '&headers=1';
+  const s = document.createElement('script');
+  let listo = false;
+  const cerrar = () => { try { delete window[fn]; } catch(e){ window[fn] = undefined; } s.remove(); };
+  const t = setTimeout(() => { if (!listo){ listo = true; cerrar(); cb(null, 'la planilla no respondió'); } }, 20000);
+  window[fn] = resp => {
+    listo = true; clearTimeout(t); cerrar();
+    try { cb(syParsear(resp), null); } catch(e){ cb(null, e.message); }
+  };
+  s.onerror = () => { if (!listo){ listo = true; clearTimeout(t); cerrar();
+    cb(null, 'no se pudo leer la planilla (¿está compartida con el enlace, y hay conexión?)'); } };
+  s.src = url;
+  document.head.appendChild(s);
+}
+
+/* Normaliza encabezados: sin acentos, sin puntuación, en minúsculas */
+const norm = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  .toLowerCase().replace(/[^a-z0-9]/g, '');
+
+function syParsear(resp){
+  const tb = resp && resp.table;
+  if (!tb || !tb.cols) throw new Error('respuesta inesperada de la planilla');
+  const ALIAS = {campo:['campo'], lote:['lote'], sup:['sup','supha','superficie'],
+                 camp:['campana','campania'], oi:['otinv','oi','cultivoinvierno','otinvierno'],
+                 pv:['primver','pv','cultivoverano']};
+  const idx = {};
+  tb.cols.forEach((c, i) => {
+    const n = norm(c.label);
+    for (const k in ALIAS) if (ALIAS[k].includes(n) && idx[k] === undefined) idx[k] = i;
+  });
+  for (const k of ['campo','lote','sup','camp','oi','pv'])
+    if (idx[k] === undefined) throw new Error('falta la columna "' + k + '" en la hoja');
+  const val = c => (c == null ? '' : (c.v !== null && c.v !== undefined ? c.v : (c.f || '')));
+  const rows = (tb.rows || []).map(r => {
+    const c = r.c || [];
+    return [String(val(c[idx.campo])).trim(), String(val(c[idx.lote])).trim(),
+            String(val(c[idx.camp])).trim(), Math.round(parseFloat(val(c[idx.sup])) || 0),
+            String(val(c[idx.oi])).trim(), String(val(c[idx.pv])).trim()];
+  }).filter(r => r[0] && r[1] && r[2]);
+  if (!rows.length) throw new Error('la hoja no devolvió filas');
+  return rows;
+}
+
+function syEstadoHTML(){
+  const e = SY_ESTADO;
+  if (e.origen === 'cargando')
+    return '<span class="pill gris">leyendo la planilla…</span>';
+  if (e.origen === 'sheet')
+    return `<span class="pill baja">planilla en vivo</span> <span style="color:var(--muted)">`
+      + `${fmt(e.filas)} filas · ${esc(SY_FUENTE.nombre)} · hoja ${esc(SY_FUENTE.hoja)} · leída ${esc(e.hora)}</span>`;
+  return `<span class="pill media">copia local</span> <span style="color:var(--muted)">`
+    + `${fmt(e.filas)} filas · exportadas el ${SY_FUENTE.snapshot}`
+    + (e.error ? ` · ${esc(e.error)}` : '') + `</span>`;
+}
+function syActualizar(auto){
+  SY_ESTADO.origen = 'cargando'; SY_ESTADO.error = null;
+  const b = $('syEstado'); if (b) b.innerHTML = syEstadoHTML();
+  syDescargar((rows, err) => {
+    if (rows){
+      SY_ROWS = rows; SY = construirSY(rows);
+      SY_ESTADO = {origen:'sheet', filas: rows.length, error: null,
+                   hora: new Date().toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'})};
+      initCatalogo();
+    } else {
+      SY = construirSY(SY_ROWS);
+      SY_ESTADO = {origen:'local', filas: SY_ROWS.length, hora: null, error: err};
+      if (!auto) initCatalogo();
+    }
+    const c = $('syEstado'); if (c) c.innerHTML = syEstadoHTML();
+  });
+}
+
+/* El antecesor del maíz de primavera-verano: el cultivo de invierno de la misma campaña;
+   si el invierno fue barbecho químico, el antecesor real es el cultivo de verano anterior. */
+function antecesorDe(l, camp){
+  const h = l.hist[camp]; if (!h) return {key:'barbecho', origen:'sin datos'};
+  const oi = h.oi || '';
+  if (oi && oi !== 'Bb Qco') return {key: MAPA_CULT[oi] || 'barbecho', origen: oi + ' (invierno ' + camp + ')'};
+  const idx = SY.campanas.indexOf(camp);
+  const prev = idx > 0 ? SY.campanas[idx - 1] : null;
+  const pvPrev = prev && l.hist[prev] ? l.hist[prev].pv : '';
+  if (pvPrev) return {key: MAPA_CULT[pvPrev] || 'barbecho', origen: pvPrev + ' (verano ' + prev + ') sobre barbecho químico'};
+  return {key:'barbecho', origen:'barbecho químico'};
+}
+function histTexto(l, camp){
+  const i = SY.campanas.indexOf(camp);
+  return SY.campanas.slice(Math.max(0, i - 2), i + 1).map(c => {
+    const x = l.hist[c]; if (!x) return null;
+    return c + ': ' + [x.oi, x.pv].filter(Boolean).join(' → ');
+  }).filter(Boolean).join('  ·  ');
+}
+
+/* ------------------------------- Estado --------------------------------- */
+let LOTES = [];
+let uid = 1;
+const P = {};                       // parámetros vivos
+
+/* ------------------------------ Utilidades ------------------------------ */
+const $  = id => document.getElementById(id);
+const num = v => { const n = parseFloat(String(v).replace(',','.')); return isFinite(n) ? n : 0; };
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+function fmt(v, d=0){
+  if (!isFinite(v)) return '—';
+  return v.toLocaleString('es-AR', {minimumFractionDigits:d, maximumFractionDigits:d});
+}
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ------------------------- Lectura de parámetros ------------------------ */
+function leerParams(){
+  P.RU        = num($('p_RU').value);
+  P.coef      = num($('p_coef').value);
+  P.eur       = num($('p_eur').value) / 100;
+  P.base      = $('p_base').value;
+  P.dap1      = num($('p_dap1').value);
+  P.dap2      = num($('p_dap2').value);
+  P.fNMO      = num($('p_fNMO').value);
+  P.kmin      = num($('p_kmin').value) / 100;
+  P.fTardio   = num($('p_fTardio').value);
+  P.incMinUmb = $('p_incMinUmb').value === '1';
+  P.pgrano    = num($('p_pgrano').value);
+  P.fuenteN   = $('p_fuenteN').value;
+  P.pfertN    = num($('p_pfertN').value);
+  P.fuenteP   = $('p_fuenteP').value;
+  P.pfertP    = num($('p_pfertP').value);
+  P.descArr   = $('p_descArr').value === '1';
+  P.umbP      = num($('p_umbP').value);
+  P.extP      = num($('p_extP').value);
+  P.fRepP     = num($('p_fRepP').value);
+  P.kBuild    = num($('p_kBuild').value);
+  P.fCorrP    = num($('p_fCorrP').value);
+  P.umbS      = num($('p_umbS').value);
+  P.dosS      = num($('p_dosS').value);
+
+  P.ant = {};
+  ANTECESORES.forEach(([k]) => { const el = $('ant_'+k); if (el) P.ant[k] = num(el.value); });
+
+  const fn = FUENTES_N[P.fuenteN], fp = FUENTES_P[P.fuenteP];
+  P.pctN  = fn.n;  P.sFuenteN = fn.s;
+  P.pctPn = fp.n;  P.pctPp = fp.p;
+  P.pN = P.pfertN / 1000 / (fn.n / 100);          // US$ por kg de N
+  P.pP = P.pfertP / 1000 / (fp.p / 100);          // US$ por kg de P2O5
+  P.pg = P.pgrano / 1000;                          // US$ por kg de grano
+  P.RP = P.pg > 0 ? P.pN / P.pg : 0;               // kg de grano por kg de N
+
+  $('p_pN').value     = P.pN.toFixed(2);
+  $('p_RPview').value = P.RP.toFixed(1);
+}
+
+/* ---------------------- Núcleo de cálculo por zona ---------------------- */
+function calcZona(z, lote){
+  const r = {};
+  r.id = z.id;
+  r.nombre = z.nombre;
+  r.ha = num(z.ha);
+  r.Y  = num(z.y);                                   // rinde objetivo tn/ha
+
+  const dap1 = num(z.dap1) || P.dap1;
+  const dap2 = num(z.dap2) || P.dap2;
+
+  /* --- Oferta --- */
+  r.Ns   = 2 * num(z.n020) * dap1 + 4 * num(z.n2060) * dap2;      // kg N/ha 0-60
+  const masa020 = 2e6 * dap1;                                     // kg suelo/ha 0-20
+  const Norg    = masa020 * (num(z.mo) / 100) * P.fNMO;
+  const kmin    = P.kmin * (lote.fecha === 'tardio' ? P.fTardio : 1);
+  r.Nmin = Norg * kmin;
+  r.Nant = P.ant[lote.antecesor] ?? 0;
+  r.Of   = r.Ns + r.Nmin + r.Nant;
+
+  /* --- Demanda --- */
+  r.D = r.Y * P.RU;
+  r.suf = r.D > 0 ? r.Of / r.D : 1;                               // suficiencia de la oferta
+
+  /* --- Fósforo (define el N del arrancador) --- */
+  const pB = num(z.p);
+  let p2o5 = r.Y * P.extP * P.fRepP;
+  if (pB < P.umbP) p2o5 += (P.umbP - pB) * P.kBuild * P.fCorrP;
+  r.P2O5 = Math.max(0, p2o5);
+  r.kgArr = P.pctPp > 0 ? r.P2O5 / (P.pctPp / 100) : 0;
+  r.Narr  = r.kgArr * (P.pctPn / 100);
+  r.costoP = r.P2O5 * P.pP;
+  r.pAlerta = pB < P.umbP;
+
+  /* --- Azufre --- */
+  const sS = num(z.s);
+  r.sAlerta = sS < P.umbS;
+  r.dosisS  = r.sAlerta ? Math.max(8, r.Y * P.dosS) : 0;
+
+  /* --- Criterio 1: balance oferta-demanda --- */
+  const credArr = P.descArr ? r.Narr : 0;
+  r.deficit = Math.max(0, r.D - r.Of);
+  r.dBal = Math.max(0, r.deficit / P.eur - credArr);
+
+  /* --- Criterio 2: umbral de N disponible por quintal --- */
+  const NdispSuelo = r.Ns + (P.incMinUmb ? r.Nmin : 0);
+  r.NdispReq = P.coef * r.Y * 10;
+  r.dUmb = Math.max(0, r.NdispReq - NdispSuelo - credArr);
+
+  /* --- Óptimo técnico --- */
+  r.Ntec = P.base === 'bal'  ? r.dBal
+         : P.base === 'umb'  ? r.dUmb
+         : P.base === 'max'  ? Math.max(r.dBal, r.dUmb)
+         : (r.dBal + r.dUmb) / 2;
+
+  /* --- Curva de respuesta --- */
+  r.Y0   = Math.min(r.Y, r.D > 0 ? (r.Of + credArr) / P.RU : r.Y);   // rinde sin N fertilizante
+  r.Rmax = Math.max(0, r.Y - r.Y0);                                  // respuesta máxima tn/ha
+
+  /* --- Criterio 3: óptimo económico --- */
+  let x = (r.Ntec > 0 && r.Rmax > 0) ? 1 - (P.RP * r.Ntec) / (2000 * r.Rmax) : 0;
+  x = clamp(x, 0, 1);
+  r.dEco = r.Ntec * x;
+
+  /* --- Dosis decidida --- */
+  r.dosis = (z.dosis === '' || z.dosis === null || z.dosis === undefined)
+            ? Math.round(r.dEco) : num(z.dosis);
+  r.dosis = Math.max(0, r.dosis);
+  r.auto  = (z.dosis === '' || z.dosis === null || z.dosis === undefined);
+
+  /* --- Resultado de la dosis decidida --- */
+  r.rindeEsp = rindeEn(r.dosis, r);
+  r.deltaY   = r.rindeEsp - r.Y0;
+  r.costoN   = r.dosis * P.pN;
+  r.ingreso  = r.deltaY * 1000 * P.pg;
+  r.margenN  = r.ingreso - r.costoN;
+  r.bc       = r.costoN > 0 ? r.ingreso / r.costoN : 0;
+  r.kgProd   = P.pctN > 0 ? r.dosis / (P.pctN / 100) : 0;
+  r.NdispFin = r.Ns + (P.incMinUmb ? r.Nmin : 0) + r.dosis + credArr;
+  r.NporQq   = r.Y > 0 ? r.NdispFin / (r.Y * 10) : 0;
+
+  /* --- Semáforo de respuesta esperada --- */
+  r.nivel = r.suf >= 0.95 ? 'baja' : r.suf >= 0.65 ? 'media' : 'alta';
+  return r;
+}
+
+function rindeEn(N, r){
+  if (r.Ntec <= 0 || r.Rmax <= 0) return r.Y0;
+  const x = Math.min(1, N / r.Ntec);
+  return r.Y0 + r.Rmax * (2 * x - x * x);
+}
+
+/* ------------------- Cálculo de todo el conjunto de lotes ---------------- */
+function calcTodo(){
+  const out = [];
+  LOTES.forEach(l => {
+    const zonas = l.zonas.map(z => calcZona(z, l));
+    const ha = zonas.reduce((a, z) => a + z.ha, 0);
+    const w  = v => ha > 0 ? zonas.reduce((a, z) => a + z[v] * z.ha, 0) / ha : 0;
+
+    /* zona virtual: el lote tratado como una sola unidad (promedio ponderado) */
+    const zProm = {
+      nombre:'Lote uniforme', ha: ha,
+      y:     ha > 0 ? zonas.reduce((a,z) => a + z.Y * z.ha, 0) / ha : 0,
+      n020:  pond(l, 'n020', ha), n2060: pond(l, 'n2060', ha),
+      dap1:  pond(l, 'dap1', ha), dap2:  pond(l, 'dap2', ha),
+      mo:    pond(l, 'mo',   ha), p:     pond(l, 'p',    ha), s: pond(l, 's', ha),
+      dosis: ''
+    };
+    const rProm = calcZona(zProm, l);
+    const dosisUnif = Math.round(rProm.dEco);
+
+    /* qué pasaría si en cada zona se aplicara la dosis uniforme */
+    const unif = zonas.map(z => {
+      const rEsp = rindeEn(dosisUnif, z);
+      return {
+        dosis: dosisUnif, ha: z.ha,
+        rinde: rEsp,
+        margen: (rEsp - z.Y0) * 1000 * P.pg - dosisUnif * P.pN
+      };
+    });
+
+    out.push({
+      lote: l, zonas, ha,
+      dosisMedia: w('dosis'), NMedio: w('Of'),
+      kgN:    zonas.reduce((a,z) => a + z.dosis * z.ha, 0),
+      kgProd: zonas.reduce((a,z) => a + z.kgProd * z.ha, 0),
+      kgArr:  zonas.reduce((a,z) => a + z.kgArr * z.ha, 0),
+      costoN: zonas.reduce((a,z) => a + z.costoN * z.ha, 0),
+      costoP: zonas.reduce((a,z) => a + z.costoP * z.ha, 0),
+      prodEsp:zonas.reduce((a,z) => a + z.rindeEsp * z.ha, 0),
+      margen: zonas.reduce((a,z) => a + z.margenN * z.ha, 0),
+      dosisUnif,
+      kgNUnif:    dosisUnif * ha,
+      prodUnif:   unif.reduce((a,u) => a + u.rinde * u.ha, 0),
+      margenUnif: unif.reduce((a,u) => a + u.margen * u.ha, 0)
+    });
+  });
+  return out;
+}
+function pond(l, campo, ha){
+  if (ha <= 0) return 0;
+  return l.zonas.reduce((a, z) => a + num(z[campo]) * num(z.ha), 0) / ha;
+}
+
+/* ============================ RENDER: LOTES ============================== */
+const FILAS = [
+  ['grp', 'Zona de manejo'],
+  ['nombre','Nombre de la zona','text'],
+  ['ha',   'Superficie · ha', 'num', 1],
+  ['y',    'Rinde objetivo · tn/ha', 'num', 0.1],
+  ['grp',  'Análisis de suelo — nitrógeno'],
+  ['n020', 'N-NO₃ 0–20 cm · ppm', 'num', 0.1],
+  ['n2060','N-NO₃ 20–60 cm · ppm', 'num', 0.1],
+  ['mo',   'Materia orgánica 0–20 · %', 'num', 0.1],
+  ['dap1', 'Densidad aparente 0–20 · g/cm³', 'num', 0.01],
+  ['dap2', 'Densidad aparente 20–60 · g/cm³', 'num', 0.01],
+  ['grp',  'Análisis de suelo — fósforo y azufre'],
+  ['p',    'P Bray-1 · ppm', 'num', 0.1],
+  ['s',    'S-SO₄ · ppm', 'num', 0.1]
+];
+
+function renderLotes(){
+  const c = $('lotesCont');
+  if (!LOTES.length){
+    c.innerHTML = '<div class="card" style="text-align:center;padding:34px 18px;color:var(--muted)">'
+      + 'Todavía no hay lotes cargados. Agregá uno o cargá el ejemplo del NEA para ver el tablero funcionando.</div>';
+    return;
+  }
+  c.innerHTML = LOTES.map((l, li) => {
+    const opts = ANTECESORES.map(([k, n]) =>
+      `<option value="${k}"${l.antecesor === k ? ' selected' : ''}>${n}</option>`).join('');
+    const ha = l.zonas.reduce((a, z) => a + num(z.ha), 0);
+
+    const cols = l.zonas.map((z, zi) => `<th>Zona ${zi + 1}</th>`).join('');
+    const filas = FILAS.map(f => {
+      if (f[0] === 'grp')
+        return `<tr class="grp"><td colspan="${l.zonas.length + 1}">${f[1]}</td></tr>`;
+      const celdas = l.zonas.map((z, zi) => {
+        const v = z[f[0]] ?? '';
+        return f[2] === 'text'
+          ? `<td><input class="zname" value="${esc(v)}" oninput="setZ(${li},${zi},'${f[0]}',this.value)"></td>`
+          : `<td><input type="number" step="${f[3]}" value="${v}" oninput="setZ(${li},${zi},'${f[0]}',this.value)"></td>`;
+      }).join('');
+      return `<tr><td class="rowlab">${f[1]}</td>${celdas}</tr>`;
+    }).join('');
+
+    return `<div class="lote">
+      <div class="lote-head">
+        <input class="nom" value="${esc(l.nombre)}" oninput="setL(${li},'nombre',this.value)">
+        <span class="lh-fld">Antecesor
+          <select onchange="setL(${li},'antecesor',this.value)">${opts}</select></span>
+        <span class="lh-fld">Fecha de siembra
+          <select onchange="setL(${li},'fecha',this.value)">
+            <option value="temprano"${l.fecha === 'temprano' ? ' selected' : ''}>Temprano</option>
+            <option value="tardio"${l.fecha === 'tardio' ? ' selected' : ''}>Tardío / 2ª</option>
+          </select></span>
+        <span class="sp"></span>
+        <span class="chip">${fmt(ha,1)} ha · ${l.zonas.length} zona${l.zonas.length > 1 ? 's' : ''}</span>
+        ${l.nota ? `<span class="chip" style="background:#f5f0fa;color:var(--muted);font-weight:600" title="Rotación: ${esc(l.hist || '')}">antecesor: ${esc(l.nota)}</span>` : ''}
+        <button class="btn ghost sm" onclick="delLote(${li})">Eliminar lote</button>
+      </div>
+      <div class="tscroll"><table class="ztable">
+        <thead><tr><th class="rowlab">Variable</th>${cols}</tr></thead>
+        <tbody>${filas}</tbody>
+      </table></div>
+      <div class="lote-foot">
+        <button class="btn sm" onclick="addZona(${li})"${l.zonas.length >= 4 ? ' disabled style="opacity:.45;cursor:not-allowed"' : ''}>+ Agregar zona</button>
+        ${l.zonas.length > 1 ? `<button class="btn ghost sm" onclick="delZona(${li})">− Quitar última zona</button>` : ''}
+        <span class="help" style="margin-left:4px">${l.zonas.length >= 4 ? 'Máximo de 4 zonas por lote alcanzado.' : ''}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ------------------------- Mutadores de estado -------------------------- */
+function setZ(li, zi, campo, val){ LOTES[li].zonas[zi][campo] = val; calcRender(); }
+function setL(li, campo, val){ LOTES[li][campo] = val; calcRender(); }
+function setDosis(lid, zid, val){
+  const l = LOTES.find(x => x.id === lid); if (!l) return;
+  const z = l.zonas.find(x => x.id === zid); if (!z) return;
+  z.dosis = val; calcRender(true);
+}
+function resetDosis(lid, zid){
+  const l = LOTES.find(x => x.id === lid); if (!l) return;
+  const z = l.zonas.find(x => x.id === zid); if (!z) return;
+  z.dosis = ''; render();
+}
+function nuevaZona(n){
+  return {id: uid++, nombre:'Zona ' + n, ha:'', y:'', n020:'', n2060:'', mo:'', dap1:'', dap2:'', p:'', s:'', dosis:''};
+}
+function addLote(){
+  LOTES.push({id: uid++, nombre:'Lote ' + (LOTES.length + 1), antecesor:'soja', fecha:'tardio',
+              zonas:[nuevaZona(1), nuevaZona(2)]});
+  render();
+}
+function delLote(li){ LOTES.splice(li, 1); render(); }
+function addZona(li){ const l = LOTES[li]; if (l.zonas.length < 4){ l.zonas.push(nuevaZona(l.zonas.length + 1)); render(); } }
+function delZona(li){ const l = LOTES[li]; if (l.zonas.length > 1){ l.zonas.pop(); render(); } }
+function limpiarTodo(){ LOTES = []; render(); }
+</script>
+<script>
+/* ========================= RENDER: RESULTADOS ============================ */
+function renderResultados(R){
+  const t = $('tablaRes');
+  if (!R.length){ t.innerHTML = ''; $('kpisTop').innerHTML = ''; $('notaTabla').textContent = ''; return; }
+
+  const head = `<thead><tr>
+    <th>Lote</th><th>Zona</th><th>ha</th><th>Rinde obj.<br>tn/ha</th>
+    <th>N-NO₃ 0-60<br>kg/ha</th><th>Mineraliz.<br>kg/ha</th><th>Antecesor<br>kg/ha</th>
+    <th>Oferta<br>kg N/ha</th><th>Demanda<br>kg N/ha</th><th>Respuesta<br>esperada</th>
+    <th>Umbral<br>kg N/ha</th><th>Balance<br>kg N/ha</th><th>Económica<br>kg N/ha</th>
+    <th>Dosis a<br>aplicar</th><th>Producto<br>kg/ha</th><th>Rinde esp.<br>tn/ha</th>
+    <th>Costo N<br>US$/ha</th><th>Margen N<br>US$/ha</th><th>P₂O₅<br>kg/ha</th><th>S<br>kg/ha</th>
+  </tr></thead>`;
+
+  const filas = R.map(g => {
+    const zs = g.zonas.map((z, i) => {
+      const alertaP = z.pAlerta ? ' <span class="pill alta" title="P Bray por debajo del umbral crítico">bajo</span>' : '';
+      const alertaS = z.sAlerta ? ' <span class="pill alta" title="S-SO₄ por debajo del umbral crítico">bajo</span>' : '';
+      return `<tr>
+        <td>${i === 0 ? esc(g.lote.nombre) : ''}</td>
+        <td>${esc(z.nombre)}</td>
+        <td>${fmt(z.ha,1)}</td><td>${fmt(z.Y,1)}</td>
+        <td>${fmt(z.Ns)}</td><td>${fmt(z.Nmin)}</td>
+        <td style="color:${z.Nant < 0 ? 'var(--rojo)' : 'inherit'}">${z.Nant > 0 ? '+' : ''}${fmt(z.Nant)}</td>
+        <td class="strong">${fmt(z.Of)}</td><td>${fmt(z.D)}</td>
+        <td><span class="pill ${z.nivel}">${z.nivel}</span></td>
+        <td style="color:#00897B;font-weight:700">${fmt(z.dUmb)}</td>
+        <td style="color:#1565C0;font-weight:700">${fmt(z.dBal)}</td>
+        <td style="color:#96690c;font-weight:700">${fmt(z.dEco)}</td>
+        <td><input class="adj" type="number" step="5" value="${Math.round(z.dosis)}"
+             onchange="setDosis(${g.lote.id},${z.id},this.value)"
+             title="${z.auto ? 'Valor automático = óptimo económico. Editá para fijar tu decisión.' : 'Dosis fijada manualmente. Borrá el valor para volver al automático.'}"
+             style="${z.auto ? '' : 'background:#fff;border-color:var(--accent)'}"></td>
+        <td>${fmt(z.kgProd)}</td><td>${fmt(z.rindeEsp,2)}</td>
+        <td>${fmt(z.costoN)}</td>
+        <td class="strong" style="color:${z.margenN < 0 ? 'var(--rojo)' : 'var(--green)'}">${fmt(z.margenN)}</td>
+        <td>${fmt(z.P2O5)}${alertaP}</td>
+        <td>${z.dosisS > 0 ? fmt(z.dosisS) : '—'}${alertaS}</td>
+      </tr>`;
+    }).join('');
+
+    const sum = `<tr class="lotesum">
+      <td colspan="2">${esc(g.lote.nombre)} · total</td>
+      <td>${fmt(g.ha,1)}</td><td>${fmt(g.ha > 0 ? g.prodEsp / g.ha : 0, 1)}</td>
+      <td colspan="4">Oferta media ${fmt(g.NMedio)} kg N/ha</td>
+      <td colspan="5"></td>
+      <td>${fmt(g.dosisMedia)}</td><td>${fmt(g.kgProd)} kg</td><td>${fmt(g.prodEsp,1)} tn</td>
+      <td>${fmt(g.costoN)}</td><td>${fmt(g.margen)}</td><td colspan="2"></td></tr>`;
+    return zs + sum;
+  }).join('');
+
+  t.innerHTML = head + '<tbody>' + filas + '</tbody>';
+
+  /* --------------------------- KPIs globales --------------------------- */
+  const ha     = R.reduce((a,g) => a + g.ha, 0);
+  const kgN    = R.reduce((a,g) => a + g.kgN, 0);
+  const kgProd = R.reduce((a,g) => a + g.kgProd, 0);
+  const costoN = R.reduce((a,g) => a + g.costoN, 0);
+  const costoP = R.reduce((a,g) => a + g.costoP, 0);
+  const prod   = R.reduce((a,g) => a + g.prodEsp, 0);
+  const margen = R.reduce((a,g) => a + g.margen, 0);
+  const dU     = R.reduce((a,g) => a + g.margenUnif, 0);
+  const gana   = margen - dU;
+
+  $('kpisTop').innerHTML = [
+    ['accent', fmt(ha,0), 'ha', 'Superficie total'],
+    ['',       fmt(ha > 0 ? kgN / ha : 0), 'kg N/ha', 'Dosis media ponderada'],
+    ['',       fmt(kgProd / 1000, 1), 'tn', FUENTES_N[P.fuenteN].nom + ' total'],
+    ['blue',   fmt(costoN + costoP), 'US$', 'Costo total N + P'],
+    ['',       fmt(ha > 0 ? (costoN + costoP) / ha : 0), 'US$/ha', 'Costo por hectárea'],
+    ['accent', fmt(prod, 0), 'tn', 'Producción esperada'],
+    [margen < 0 ? 'alert' : 'accent', fmt(margen), 'US$', 'Margen del N sobre el conjunto'],
+    [gana < 0 ? 'alert' : 'accent', (gana >= 0 ? '+' : '') + fmt(gana), 'US$', 'Ganancia vs. dosis uniforme']
+  ].map(k => `<div class="kpi ${k[0]}"><div class="n">${k[1]}<small>${k[2]}</small></div><div class="l">${k[3]}</div></div>`).join('');
+
+  const nAuto = R.reduce((a,g) => a + g.zonas.filter(z => z.auto).length, 0);
+  const nTot  = R.reduce((a,g) => a + g.zonas.length, 0);
+  $('notaTabla').innerHTML = `La columna <b>Dosis a aplicar</b> arranca en el óptimo económico (${nAuto} de ${nTot} zonas en automático) `
+    + `y es editable zona por zona. El rinde esperado, el costo y el margen se recalculan sobre la curva de respuesta de cada zona. `
+    + `Relación de precios vigente: <b>${fmt(P.RP,1)} kg de grano por kg de N</b> — cada kg de N necesita esa respuesta marginal para pagarse.`
+    + `<br>Cuando <b>umbral</b> y <b>balance</b> se separan mucho en una zona, no es un error del cálculo: el umbral computa el N del fertilizante uno a uno contra un coeficiente calibrado, mientras que el balance descuenta la mineralización estimada y castiga la dosis por la eficiencia de recuperación. La brecha mide cuánto pesa el supuesto de mineralización — es la primera variable a revisar antes de cerrar la dosis.`;
+}
+
+/* ============================= RENDER: PLAN ============================== */
+function renderPlan(R){
+  const fn = FUENTES_N[P.fuenteN], fp = FUENTES_P[P.fuenteP];
+  if (!R.length){ $('tablaPlan').innerHTML = ''; $('tablaVR').innerHTML = ''; return; }
+
+  $('tablaPlan').innerHTML =
+    `<thead><tr><th>Lote</th><th>ha</th><th>kg N<br>total</th><th>${fn.nom}<br>tn</th>
+      <th>${fp.nom}<br>tn</th><th>Costo<br>US$</th><th>US$/ha</th></tr></thead><tbody>`
+    + R.map(g => `<tr><td>${esc(g.lote.nombre)}</td><td>${fmt(g.ha,1)}</td><td>${fmt(g.kgN)}</td>
+        <td>${fmt(g.kgProd / 1000, 2)}</td><td>${fmt(g.kgArr / 1000, 2)}</td>
+        <td>${fmt(g.costoN + g.costoP)}</td>
+        <td>${fmt(g.ha > 0 ? (g.costoN + g.costoP) / g.ha : 0)}</td></tr>`).join('')
+    + `<tr class="lotesum"><td>Total</td>
+        <td>${fmt(R.reduce((a,g)=>a+g.ha,0),1)}</td>
+        <td>${fmt(R.reduce((a,g)=>a+g.kgN,0))}</td>
+        <td>${fmt(R.reduce((a,g)=>a+g.kgProd,0)/1000,2)}</td>
+        <td>${fmt(R.reduce((a,g)=>a+g.kgArr,0)/1000,2)}</td>
+        <td>${fmt(R.reduce((a,g)=>a+g.costoN+g.costoP,0))}</td><td></td></tr></tbody>`;
+
+  $('tablaVR').innerHTML =
+    `<thead><tr><th>Lote</th><th>Dosis uniforme<br>kg N/ha</th><th>Dosis variable<br>kg N/ha (media)</th>
+      <th>Δ kg N</th><th>Δ producción<br>tn</th><th>Δ margen<br>US$</th></tr></thead><tbody>`
+    + R.map(g => {
+        const dK = g.kgN - g.kgNUnif, dP = g.prodEsp - g.prodUnif, dM = g.margen - g.margenUnif;
+        return `<tr><td>${esc(g.lote.nombre)}</td><td>${fmt(g.dosisUnif)}</td><td>${fmt(g.dosisMedia)}</td>
+          <td style="color:${dK < 0 ? 'var(--green)' : 'var(--muted)'}">${dK >= 0 ? '+' : ''}${fmt(dK)}</td>
+          <td>${dP >= 0 ? '+' : ''}${fmt(dP,1)}</td>
+          <td style="font-weight:800;color:${dM < 0 ? 'var(--rojo)' : 'var(--green)'}">${dM >= 0 ? '+' : ''}${fmt(dM)}</td></tr>`;
+      }).join('')
+    + `<tr class="lotesum"><td>Total</td><td></td><td></td>
+        <td>${fmt(R.reduce((a,g)=>a+g.kgN-g.kgNUnif,0))}</td>
+        <td>${fmt(R.reduce((a,g)=>a+g.prodEsp-g.prodUnif,0),1)}</td>
+        <td>${fmt(R.reduce((a,g)=>a+g.margen-g.margenUnif,0))}</td></tr></tbody>`;
+}
+
+/* ============================== GRÁFICOS ================================= */
+const AX = {fs:11, col:'#6c6377'};
+function svgOpen(w, h){ return `<svg class="chart" viewBox="0 0 ${w} ${h}" width="100%" style="max-width:${w}px;height:auto">`; }
+function txt(x, y, s, o = {}){
+  return `<text x="${x}" y="${y}" font-size="${o.fs || AX.fs}" fill="${o.col || AX.col}" `
+    + `text-anchor="${o.a || 'middle'}" font-weight="${o.w || 500}"${o.rot ? ` transform="rotate(${o.rot} ${x} ${y})"` : ''}>${s}</text>`;
+}
+function gridY(x0, x1, y, v, d = 0){
+  return `<line x1="${x0}" y1="${y}" x2="${x1}" y2="${y}" stroke="#e7e1ee" stroke-width="1"/>`
+    + txt(x0 - 7, y + 3.5, fmt(v, d), {a:'end', fs:10});
+}
+function nice(max){
+  if (max <= 0) return 10;
+  const p = Math.pow(10, Math.floor(Math.log10(max / 4)));
+  for (const s of [1, 2, 2.5, 5, 10]) { if (s * p * 4 >= max) return s * p * 4; }
+  return 40 * p;
+}
+
+/* --- Gráfico 1: dosis por criterio --- */
+function chartDosis(R){
+  const zonas = [];
+  R.forEach(g => g.zonas.forEach(z => zonas.push({lote:g.lote.nombre, ...z})));
+  if (!zonas.length){ $('chDosis').innerHTML = ''; return; }
+
+  const gw = Math.max(64, Math.min(120, 720 / zonas.length));
+  const W = Math.max(560, 78 + zonas.length * gw + 20), H = 320;
+  const x0 = 52, y0 = 250, y1 = 24;
+  const max = nice(Math.max(10, ...zonas.map(z => Math.max(z.dUmb, z.dBal, z.dEco, z.dosis))));
+  const sy = v => y0 - (v / max) * (y0 - y1);
+
+  let s = svgOpen(W, H);
+  for (let i = 0; i <= 4; i++) s += gridY(x0, W - 14, sy(max * i / 4), max * i / 4);
+  s += `<line x1="${x0}" y1="${y0}" x2="${W - 14}" y2="${y0}" stroke="#d6c9e3" stroke-width="1.5"/>`;
+  s += txt(14, (y0 + y1) / 2, 'kg N / ha', {rot:-90, fs:10.5, w:700});
+
+  const cols = ['#00897B', '#1565C0', '#E8A21A', '#6A1B9A'];
+  zonas.forEach((z, i) => {
+    const bx = x0 + 10 + i * gw, bw = (gw - 18) / 4;
+    [z.dUmb, z.dBal, z.dEco, z.dosis].forEach((v, k) => {
+      const h = Math.max(0, y0 - sy(v));
+      s += `<rect x="${bx + k * bw}" y="${sy(v)}" width="${bw - 1.5}" height="${h}" fill="${cols[k]}" rx="2">`
+        + `<title>${esc(z.nombre)} — ${['Umbral','Balance','Económica','A aplicar'][k]}: ${fmt(v)} kg N/ha</title></rect>`;
+      if (k === 3 && v > 0) s += txt(bx + k * bw + bw / 2, sy(v) - 4, fmt(v), {fs:9.5, w:800, col:'#6A1B9A'});
+    });
+    s += txt(bx + (gw - 18) / 2, y0 + 15, esc(z.nombre).slice(0, 13), {fs:10, w:700, col:'#332a3d'});
+    s += txt(bx + (gw - 18) / 2, y0 + 28, esc(z.lote).slice(0, 15), {fs:9.5});
+  });
+  $('chDosis').innerHTML = s + '</svg>';
+}
+
+/* --- Gráfico 2: balance de N apilado --- */
+function chartBalance(R){
+  const zonas = [];
+  R.forEach(g => g.zonas.forEach(z => zonas.push({lote:g.lote.nombre, ...z})));
+  if (!zonas.length){ $('chBalance').innerHTML = ''; return; }
+
+  const gw = Math.max(48, Math.min(96, 520 / zonas.length));
+  const W = Math.max(430, 70 + zonas.length * gw + 18), H = 320;
+  const x0 = 50, y0 = 250, y1 = 24;
+  const tot = z => z.Ns + z.Nmin + Math.max(0, z.Nant) + z.dosis * P.eur;
+  const max = nice(Math.max(10, ...zonas.map(z => Math.max(tot(z), z.D))));
+  const sy = v => y0 - (v / max) * (y0 - y1);
+
+  let s = svgOpen(W, H);
+  for (let i = 0; i <= 4; i++) s += gridY(x0, W - 12, sy(max * i / 4), max * i / 4);
+  s += `<line x1="${x0}" y1="${y0}" x2="${W - 12}" y2="${y0}" stroke="#d6c9e3" stroke-width="1.5"/>`;
+  s += txt(13, (y0 + y1) / 2, 'kg N / ha', {rot:-90, fs:10.5, w:700});
+
+  zonas.forEach((z, i) => {
+    const bx = x0 + 12 + i * gw, bw = gw - 24;
+    let acc = 0;
+    [['#4A148C', z.Ns, 'N-NO₃ inicial'], ['#7B3FB5', z.Nmin, 'Mineralización'],
+     ['#B08BD4', Math.max(0, z.Nant), 'Antecesor'], ['#E8A21A', z.dosis * P.eur, 'N del fertilizante recuperado']]
+    .forEach(([c, v, lab]) => {
+      if (v <= 0) return;
+      const yTop = sy(acc + v), h = sy(acc) - yTop;
+      s += `<rect x="${bx}" y="${yTop}" width="${bw}" height="${h}" fill="${c}">`
+        + `<title>${esc(z.nombre)} — ${lab}: ${fmt(v)} kg N/ha</title></rect>`;
+      acc += v;
+    });
+    s += `<line x1="${bx - 5}" y1="${sy(z.D)}" x2="${bx + bw + 5}" y2="${sy(z.D)}" stroke="#D6483F" stroke-width="2.5" stroke-linecap="round"><title>Demanda: ${fmt(z.D)} kg N/ha</title></line>`;
+    s += txt(bx + bw / 2, y0 + 15, esc(z.nombre).slice(0, 11), {fs:10, w:700, col:'#332a3d'});
+    s += txt(bx + bw / 2, y0 + 28, esc(z.lote).slice(0, 13), {fs:9.5});
+  });
+  $('chBalance').innerHTML = s + '</svg>';
+}
+
+/* --- Gráfico 3: curva de respuesta --- */
+function chartResp(z){
+  if (!z){ $('chResp').innerHTML = ''; $('chMargen').innerHTML = ''; $('zonaDetalle').innerHTML = ''; return; }
+  const W = 540, H = 320, x0 = 56, x1 = W - 18, y0 = 252, y1 = 22;
+  const Nmax = Math.max(40, nice(Math.max(z.Ntec, z.dosis, z.dEco) * 1.45));
+  const yTop = Math.max(z.Y * 1.06, z.Y0 + 0.4);
+  const yBot = Math.max(0, z.Y0 - Math.max(0.6, z.Rmax * 0.25));
+  const sx = n => x0 + (n / Nmax) * (x1 - x0);
+  const sy = y => y0 - ((y - yBot) / Math.max(0.01, yTop - yBot)) * (y0 - y1);
+
+  let s = svgOpen(W, H);
+  for (let i = 0; i <= 4; i++){
+    const v = yBot + (yTop - yBot) * i / 4;
+    s += gridY(x0, x1, sy(v), v, 1);
+  }
+  let d = '';
+  for (let n = 0; n <= Nmax; n += Nmax / 90) d += (d ? ' L' : 'M') + sx(n).toFixed(1) + ',' + sy(rindeEn(n, z)).toFixed(1);
+  s += `<path d="${d}" fill="none" stroke="#6A1B9A" stroke-width="2.6" stroke-linejoin="round"/>`;
+
+  const marca = (n, col, lab) => {
+    if (n <= 0 || n > Nmax) return '';
+    return `<line x1="${sx(n)}" y1="${y0}" x2="${sx(n)}" y2="${sy(rindeEn(n, z))}" stroke="${col}" stroke-width="1.6" stroke-dasharray="4 3"/>`
+      + `<circle cx="${sx(n)}" cy="${sy(rindeEn(n, z))}" r="4.5" fill="${col}"><title>${lab}: ${fmt(n)} kg N/ha → ${fmt(rindeEn(n, z),2)} tn/ha</title></circle>`
+      + txt(sx(n), sy(rindeEn(n, z)) - 10, lab, {fs:9.5, w:800, col});
+  };
+  s += marca(z.Ntec, '#1565C0', 'Técnico');
+  s += marca(z.dEco, '#E8A21A', 'Económico');
+  if (Math.abs(z.dosis - z.dEco) > 1) s += marca(z.dosis, '#00897B', 'Aplicada');
+
+  s += `<line x1="${x0}" y1="${sy(z.Y)}" x2="${x1}" y2="${sy(z.Y)}" stroke="#d6c9e3" stroke-width="1" stroke-dasharray="2 4"/>`;
+  s += txt(x1 - 2, sy(z.Y) - 5, 'rinde objetivo ' + fmt(z.Y,1) + ' tn', {a:'end', fs:9.5});
+  s += `<line x1="${x0}" y1="${y0}" x2="${x1}" y2="${y0}" stroke="#d6c9e3" stroke-width="1.5"/>`;
+  for (let i = 0; i <= 4; i++){
+    const n = Nmax * i / 4;
+    s += txt(sx(n), y0 + 15, fmt(n), {fs:10});
+  }
+  s += txt((x0 + x1) / 2, y0 + 32, 'dosis de N · kg/ha', {fs:10.5, w:700});
+  s += txt(14, (y0 + y1) / 2, 'rinde · tn/ha', {rot:-90, fs:10.5, w:700});
+  $('chResp').innerHTML = s + '</svg>';
+
+  /* --- margen --- */
+  const W2 = 540, x0b = 56, x1b = W2 - 18;
+  const margen = n => (rindeEn(n, z) - z.Y0) * 1000 * P.pg - n * P.pN;
+  let mn = 0, mx = 0;
+  for (let n = 0; n <= Nmax; n += Nmax / 60){ const m = margen(n); mn = Math.min(mn, m); mx = Math.max(mx, m); }
+  const mTop = nice(Math.max(10, mx * 1.12)), mBot = mn < 0 ? -nice(Math.max(10, -mn * 1.2)) : 0;
+  const sx2 = n => x0b + (n / Nmax) * (x1b - x0b);
+  const sy2 = m => y0 - ((m - mBot) / Math.max(1, mTop - mBot)) * (y0 - y1);
+
+  let s2 = svgOpen(W2, H);
+  for (let i = 0; i <= 4; i++){ const v = mBot + (mTop - mBot) * i / 4; s2 += gridY(x0b, x1b, sy2(v), v); }
+  let d2 = '';
+  for (let n = 0; n <= Nmax; n += Nmax / 90) d2 += (d2 ? ' L' : 'M') + sx2(n).toFixed(1) + ',' + sy2(margen(n)).toFixed(1);
+  s2 += `<path d="${d2}" fill="none" stroke="#1565C0" stroke-width="2.6"/>`;
+  s2 += `<line x1="${x0b}" y1="${sy2(0)}" x2="${x1b}" y2="${sy2(0)}" stroke="#d6c9e3" stroke-width="1.5"/>`;
+  if (z.dEco > 0 && z.dEco <= Nmax){
+    s2 += `<line x1="${sx2(z.dEco)}" y1="${sy2(mBot)}" x2="${sx2(z.dEco)}" y2="${sy2(margen(z.dEco))}" stroke="#E8A21A" stroke-width="1.6" stroke-dasharray="4 3"/>`
+       + `<circle cx="${sx2(z.dEco)}" cy="${sy2(margen(z.dEco))}" r="4.5" fill="#E8A21A"><title>Óptimo económico: ${fmt(z.dEco)} kg N/ha → ${fmt(margen(z.dEco))} US$/ha</title></circle>`
+       + txt(sx2(z.dEco), sy2(margen(z.dEco)) - 10, fmt(margen(z.dEco)) + ' US$/ha', {fs:9.5, w:800, col:'#96690c'});
+  }
+  if (Math.abs(z.dosis - z.dEco) > 1 && z.dosis <= Nmax)
+    s2 += `<circle cx="${sx2(z.dosis)}" cy="${sy2(margen(z.dosis))}" r="4.5" fill="#6A1B9A"><title>Dosis aplicada: ${fmt(z.dosis)} kg N/ha → ${fmt(margen(z.dosis))} US$/ha</title></circle>`;
+  for (let i = 0; i <= 4; i++) s2 += txt(sx2(Nmax * i / 4), y0 + 15, fmt(Nmax * i / 4), {fs:10});
+  s2 += txt((x0b + x1b) / 2, y0 + 32, 'dosis de N · kg/ha', {fs:10.5, w:700});
+  s2 += txt(14, (y0 + y1) / 2, 'margen del N · US$/ha', {rot:-90, fs:10.5, w:700});
+  $('chMargen').innerHTML = s2 + '</svg>';
+
+  /* --- ficha de la zona --- */
+  $('zonaDetalle').innerHTML = `<div class="kpis" style="margin-top:16px">
+    ${[['', fmt(z.Y0,2), 'tn/ha', 'Rinde sin fertilizar (sólo oferta del suelo)'],
+       ['accent', fmt(z.Rmax,2), 'tn/ha', 'Respuesta máxima alcanzable'],
+       ['', fmt(z.Rmax > 0 && z.Ntec > 0 ? 2000 * z.Rmax / z.Ntec : 0, 1), 'kg/kg N', 'Eficiencia marginal en dosis cero'],
+       ['blue', fmt(P.RP,1), 'kg/kg N', 'Respuesta que hay que pagar (relación de precios)'],
+       ['', fmt(z.NporQq,2), 'kg N/qq', 'N disponible final por quintal'],
+       [z.margenN < 0 ? 'alert' : 'accent', fmt(z.bc,1), '×', 'Relación beneficio / costo del N']]
+      .map(k => `<div class="kpi ${k[0]}"><div class="n">${k[1]}<small>${k[2]}</small></div><div class="l">${k[3]}</div></div>`).join('')}
+  </div>`;
+}
+
+/* ============================ ORQUESTACIÓN ============================== */
+let ultimaSel = '';
+function render(){ renderLotes(); calcRender(); }
+
+function calcRender(soloResultados){
+  leerParams();
+  const R = calcTodo();
+  renderResultados(R);
+  renderPlan(R);
+  chartDosis(R);
+  chartBalance(R);
+
+  /* selector de zona para la curva de respuesta */
+  const sel = $('selZona');
+  const opciones = [];
+  R.forEach(g => g.zonas.forEach(z => opciones.push({k: g.lote.id + '|' + z.id, n: g.lote.nombre + ' · ' + z.nombre, z})));
+  const prev = sel.value || ultimaSel;
+  sel.innerHTML = opciones.map(o => `<option value="${o.k}">${esc(o.n)}</option>`).join('');
+  let hit = opciones.find(o => o.k === prev);
+  if (!hit && opciones.length){
+    hit = opciones.reduce((a, o) => (o.z.Rmax > a.z.Rmax ? o : a), opciones[0]);
+  }
+  if (hit){ sel.value = hit.k; ultimaSel = hit.k; chartResp(hit.z); }
+  else chartResp(null);
+
+  if (!soloResultados) { /* nada extra por ahora */ }
+}
+
+/* Valores de laboratorio de ejemplo — sólo para demostrar el tablero.
+   Rango plausible para el Chaco semiárido; se escalan con el rinde objetivo de la zona
+   para que el ambiente más productivo también tenga mejor suelo. */
+function labEjemplo(){
+  LOTES.forEach(l => {
+    const ys = l.zonas.map(z => num(z.y)).filter(v => v > 0);
+    const yMin = Math.min(...ys, 99), yMax = Math.max(...ys, 0);
+    l.zonas.forEach(z => {
+      const t = (yMax > yMin) ? (num(z.y) - yMin) / (yMax - yMin) : 0.5;   // 0 = peor ambiente
+      const v = (a, b, d) => String(Math.round((a + (b - a) * t) * Math.pow(10, d)) / Math.pow(10, d));
+      if (z.n020  === '') z.n020  = v(7, 14, 1);
+      if (z.n2060 === '') z.n2060 = v(4, 8, 1);
+      if (z.mo    === '') z.mo    = v(1.5, 2.7, 1);
+      if (z.dap1  === '') z.dap1  = v(1.32, 1.18, 2);
+      if (z.dap2  === '') z.dap2  = v(1.42, 1.28, 2);
+      if (z.p     === '') z.p     = v(10, 22, 0);
+      if (z.s     === '') z.s     = v(6, 12, 0);
+    });
+  });
+  render();
+}
+
+/* ----------------------- Catálogo: filtro y alta ------------------------ */
+function syFiltrados(){
+  const camp = $('syCamp').value, campo = $('syCampo').value, cult = $('syCult').value;
+  return SY.lotes.filter(l => {
+    const x = l.hist[camp]; if (!x) return false;
+    if (campo && l.campo !== campo) return false;
+    if (cult && x.pv !== cult) return false;
+    return true;
+  }).sort((a,b) => a.campo.localeCompare(b.campo) || a.lote.localeCompare(b.lote));
+}
+function syLista(){
+  const camp = $('syCamp').value;
+  const ls = syFiltrados();
+  const t = $('syTabla');
+  if (!ls.length){ t.innerHTML = '<tbody><tr><td style="color:var(--muted);padding:14px">Sin lotes para ese filtro.</td></tr></tbody>'; return; }
+  t.innerHTML = `<thead><tr><th style="width:30px"></th><th>Campo</th><th>Lote</th><th>ha</th>
+      <th style="text-align:left">Invierno</th><th style="text-align:left">Verano</th>
+      <th style="text-align:left">Antecesor del modelo</th><th style="text-align:left">Rotación reciente</th></tr></thead><tbody>`
+    + ls.map(l => {
+        const x = l.hist[camp], a = antecesorDe(l, camp);
+        const nom = (ANTECESORES.find(z => z[0] === a.key) || ['','—',0]);
+        return `<tr>
+          <td><input type="checkbox" class="sychk" data-k="${esc(l.campo + '|' + l.lote)}" checked></td>
+          <td>${esc(l.campo)}</td><td><b>${esc(l.lote)}</b></td><td>${fmt(x.ha)}</td>
+          <td style="text-align:left">${esc(x.oi || '—')}</td>
+          <td style="text-align:left">${esc(x.pv || '—')}</td>
+          <td style="text-align:left"><b>${esc(nom[1])}</b> <span class="pill ${nom[2] >= 0 ? 'baja' : 'alta'}">${nom[2] >= 0 ? '+' : ''}${nom[2]} kg N</span></td>
+          <td style="text-align:left;font-size:11.5px;color:var(--muted)">${esc(histTexto(l, camp))}</td></tr>`;
+      }).join('') + '</tbody>';
+}
+function syMarcar(v){ document.querySelectorAll('.sychk').forEach(c => c.checked = v); }
+function syAgregar(){
+  const camp = $('syCamp').value;
+  const nz = parseInt($('syZonas').value, 10);
+  const Yref = num($('syRinde').value) || 7.5;
+  const sel = [...document.querySelectorAll('.sychk')].filter(c => c.checked).map(c => c.dataset.k);
+  if (!sel.length) return;
+  sel.forEach(k => {
+    const l = SY.lotes.find(x => x.campo + '|' + x.lote === k); if (!l) return;
+    const x = l.hist[camp], a = antecesorDe(l, camp);
+    /* el rinde objetivo se abre ±15 % entre ambientes; una sola zona toma el valor de referencia */
+    const zonas = [];
+    for (let i = 0; i < nz; i++){
+      const f = nz === 1 ? 1 : 1 - 0.15 + (0.30 * i) / (nz - 1);
+      const haZ = i === nz - 1 ? x.ha - Math.round(x.ha / nz) * (nz - 1) : Math.round(x.ha / nz);
+      zonas.push({id: uid++, nombre: nz === 1 ? 'Lote completo' : 'Ambiente ' + (i + 1),
+        ha: haZ, y: Math.round(Yref * f * 10) / 10,
+        n020:'', n2060:'', mo:'', dap1:'', dap2:'', p:'', s:'', dosis:''});
+    }
+    LOTES.push({id: uid++, nombre: l.campo + ' — ' + l.lote, antecesor: a.key, fecha:'tardio',
+      nota: a.origen, hist: histTexto(l, camp), campana: camp, zonas});
+  });
+  render();
+  document.getElementById('lotes').scrollIntoView({behavior:'smooth'});
+}
+
+/* ------------------------------ Arranque -------------------------------- */
+function initAntecesores(){
+  $('antGrid').innerHTML = ANTECESORES.map(([k, n, v]) =>
+    `<div class="fld"><label>${n} <span class="u">kg N/ha</span></label>
+     <input type="number" step="1" id="ant_${k}" value="${v}"></div>`).join('');
+}
+function initEventos(){
+  document.querySelectorAll('#supuestos input, #supuestos select').forEach(el => {
+    el.addEventListener('input',  () => calcRender());
+    el.addEventListener('change', () => calcRender());
+  });
+  $('p_fuenteN').addEventListener('change', e => { $('p_pfertN').value = FUENTES_N[e.target.value].precio; calcRender(); });
+  $('p_fuenteP').addEventListener('change', e => { $('p_pfertP').value = FUENTES_P[e.target.value].precio; calcRender(); });
+}
+function initCatalogo(){
+  const cs = SY.campanas;
+  const campPrev = $('syCamp').value, campoPrev = $('syCampo').value;
+  const campSel = cs.includes(campPrev) ? campPrev : cs[cs.length - 1];
+  $('syCamp').innerHTML = cs.map(c => `<option value="${c}"${c === campSel ? ' selected' : ''}>${c}</option>`).join('');
+  const campos = [...new Set(SY.lotes.map(l => l.campo))].sort();
+  const campoSel = campoPrev !== null && campos.includes(campoPrev) ? campoPrev
+                 : (campos.includes('Baralle') ? 'Baralle' : (campos[0] || ''));
+  $('syCampo').innerHTML = '<option value="">Todos los campos</option>'
+    + campos.map(c => `<option value="${esc(c)}"${c === campoSel ? ' selected' : ''}>${esc(c)}</option>`).join('');
+  syLista();
+  const b = $('syEstado'); if (b) b.innerHTML = syEstadoHTML();
+}
+(function init(){
+  $('fechaHoy').textContent = new Date().toLocaleDateString('es-AR', {day:'numeric', month:'long', year:'numeric'});
+  initAntecesores();
+  initEventos();
+  initCatalogo();
+  syAgregar();          // arranca con los lotes de maíz del campo seleccionado
+  syActualizar(true);   // y en segundo plano refresca el catálogo desde la planilla
+})();
+</script>
+</body>
+</html>
