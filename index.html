@@ -197,7 +197,7 @@ svg.chart text{font-family:inherit}
     </div>
     <div class="hero-title">
       <h1>Tablero de fertilización nitrogenada en maíz</h1>
-      <p>Demanda, oferta y dosis de N por zona de manejo, con tres criterios en paralelo: umbral de N disponible por quintal, balance oferta–demanda y óptimo económico según relación de precios. Cargado con el catálogo de lotes y la rotación histórica de Suri Yaco.</p>
+      <p>Demanda, oferta y dosis de N por zona de manejo, con cuatro criterios en paralelo: umbral de N disponible por quintal, balance oferta–demanda, objetivo de gramos de N por planta y óptimo económico. Cargado con el catálogo de lotes y la rotación histórica de Suri Yaco.</p>
     </div>
   </div>
 </header>
@@ -238,6 +238,7 @@ svg.chart text{font-family:inherit}
           <option value="bal">Balance oferta–demanda</option>
           <option value="umb">Umbral de N disponible</option>
           <option value="max">El mayor de ambos</option>
+          <option value="gnp">Objetivo de g N por planta</option>
         </select></div>
     </div>
 
@@ -260,6 +261,30 @@ svg.chart text{font-family:inherit}
         <select id="p_incMinUmb"><option value="0" selected>No · sólo N-NO₃ 0–60 (clásico)</option>
           <option value="1">Sí · N-NO₃ + mineralización</option></select></div>
     </div>
+
+    <div class="subhead">Nitrógeno por planta <span class="u" style="font-weight:600;text-transform:none;letter-spacing:0">— diagnóstico calibrado sobre 2.405 registros de Suri Yaco (campañas 20-21 a 25-26)</span></div>
+    <div class="pgrid">
+      <div class="fld"><label>Tipo de año esperado
+        <span class="info" title="Clasificación por lluvia acumulada entre siembra y madurez fisiológica: seco &lt;300 mm, normal 300-500 mm, húmedo &gt;500 mm.">?</span></label>
+        <select id="p_tipoAno">
+          <option value="seco">Seco · &lt;300 mm</option>
+          <option value="normal" selected>Normal · 300–500 mm</option>
+          <option value="humedo">Húmedo · &gt;500 mm</option>
+        </select></div>
+      <div class="fld"><label>Dosis de siembra por defecto <span class="u">semillas/ha</span>
+        <span class="info" title="Se usa en las zonas que no tengan dosis de siembra cargada. Con siembra variable, cargá la de cada ambiente.">?</span></label>
+        <input type="number" step="1000" id="p_dsDef" value="60000"></div>
+      <div class="fld"><label>Banda objetivo de N s+f por planta <span class="u">g N/pl · mínimo</span>
+        <span class="info" title="Rango de gramos de N por planta (suelo 0-60 + fertilizante) donde el rinde relativo deja de mejorar. Cambia con el tipo de año.">?</span></label>
+        <input type="number" step="0.05" id="p_bandaMin" value="1.5"></div>
+      <div class="fld"><label>Banda objetivo de N s+f por planta <span class="u">g N/pl · máximo</span></label>
+        <input type="number" step="0.05" id="p_bandaMax" value="2.0"></div>
+      <div class="fld"><label>Banda objetivo de N del fertilizante <span class="u">g N/pl · mínimo</span></label>
+        <input type="number" step="0.05" id="p_bandaFMin" value="0.9"></div>
+      <div class="fld"><label>Banda objetivo de N del fertilizante <span class="u">g N/pl · máximo</span></label>
+        <input type="number" step="0.05" id="p_bandaFMax" value="1.4"></div>
+    </div>
+    <p class="help">Al cambiar el tipo de año, las cuatro bandas se reescriben con los valores calibrados; después podés ajustarlas a mano. Con siembra y fertilización variables, los kg N/ha esconden el efecto de la densidad: dos ambientes con la misma dosis pero distinta población le entregan a cada planta cantidades muy distintas de N.</p>
 
     <div class="subhead">Aporte del antecesor <span class="u" style="font-weight:600;text-transform:none;letter-spacing:0">— crédito (+) o inmovilización (−) de N, en kg N/ha</span></div>
     <div class="pgrid" id="antGrid"></div>
@@ -387,18 +412,19 @@ svg.chart text{font-family:inherit}
 </div></section>
 
 <section id="graficos"><div class="wrap">
-  <div class="sec-head"><h2>Gráficos</h2><span class="k">Comparación de criterios, balance de N y curva de respuesta</span></div>
+  <div class="sec-head"><h2>Gráficos</h2><span class="k">Comparación de criterios, balance de N, nitrógeno por planta y curva de respuesta</span></div>
 
   <div class="grid mixB">
     <div class="card">
       <h3>Dosis de N según criterio</h3>
-      <p class="sub">Cada zona con los tres criterios en paralelo y la dosis finalmente decidida</p>
+      <p class="sub">Cada zona con los cuatro criterios en paralelo y la dosis finalmente decidida</p>
       <div class="chart-wrap" id="chDosis"></div>
       <div class="legend">
         <span><i style="background:#00897B"></i>Umbral N disponible</span>
         <span><i style="background:#1565C0"></i>Balance oferta–demanda</span>
+        <span><i style="background:#B0288C"></i>Objetivo g N por planta</span>
         <span><i style="background:#E8A21A"></i>Óptimo económico</span>
-        <span><i style="background:#6A1B9A"></i>Dosis a aplicar</span>
+        <span><i style="background:#4A148C;height:3px;border-radius:2px"></i>Dosis a aplicar</span>
       </div>
     </div>
     <div class="card">
@@ -411,6 +437,29 @@ svg.chart text{font-family:inherit}
         <span><i style="background:#B08BD4"></i>Antecesor</span>
         <span><i style="background:#E8A21A"></i>N del fertilizante recuperado</span>
         <span><i style="background:#D6483F;border-radius:50%"></i>Demanda</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid mixB" style="margin-top:16px">
+    <div class="card">
+      <h3>Nitrógeno por planta</h3>
+      <p class="sub">Gramos de N que recibe cada planta con la dosis decidida, contra la banda objetivo del tipo de año</p>
+      <div class="chart-wrap" id="chNpl"></div>
+      <div class="legend">
+        <span><i style="background:#4A148C"></i>N del suelo (N-NO₃ 0–60)</span>
+        <span><i style="background:#E8A21A"></i>N del fertilizante</span>
+        <span><i style="background:#B0288C;opacity:.22"></i>Banda objetivo</span>
+      </div>
+    </div>
+    <div class="card">
+      <h3>De dónde salen las bandas</h3>
+      <p class="sub">2.405 registros de maíz de Suri Yaco, con el rinde centrado dentro de cada campaña × ambiente × campo</p>
+      <div class="chart-wrap" id="chHist"></div>
+      <div class="legend">
+        <span><i style="background:#C1873B"></i>Año seco</span>
+        <span><i style="background:#1565C0"></i>Año normal</span>
+        <span><i style="background:#00897B"></i>Año húmedo</span>
       </div>
     </div>
   </div>
@@ -484,16 +533,43 @@ svg.chart text{font-family:inherit}
     <p>Cuando la relación de precios se estira, el óptimo económico se separa del técnico: ahí es donde la decisión deja de ser agronómica y pasa a ser de negocio.</p>
     <p>El rinde alcanzable sin fertilizar (Y₀) y la respuesta máxima salen del marco del balance: <code>Y₀ = oferta / requerimiento unitario</code>, acotado por el rinde objetivo. Por eso, si elegís el umbral como criterio base, el óptimo económico se lee más conservador que la dosis del umbral — es la misma tensión entre los dos modelos, ahora expresada en dólares.</p>
 
-    <h4>5 · Fósforo y azufre</h4>
+    <h4>5 · Gramos de N por planta</h4>
+    <p>Con siembra y fertilización variables, los kg N/ha esconden el efecto de la densidad: dos ambientes con la misma dosis pero distinta población le entregan a cada planta cantidades muy distintas de N. La métrica que resuelve eso es:</p>
+    <p><code>g N ferti/pl = kg N del fertilizante × 1000 / dosis de siembra (semillas/ha)</code></p>
+    <p><code>g N s+f/pl = (N-NO₃ 0–60 + kg N del fertilizante) × 1000 / dosis de siembra</code></p>
+    <p>De ahí sale el cuarto criterio de dosis: <code>Dosis = objetivo g N s+f/pl × dosis de siembra / 1000 − N-NO₃(0–60)</code>, con el objetivo tomado como el centro de la banda del tipo de año.</p>
+    <p><b>Las bandas</b> están calibradas sobre 2.405 registros de maíz de Suri Yaco de las campañas 20-21 a 25-26, excluidas las zonas sin fertilizar. Para separar el efecto del N del efecto del año y del ambiente, el rinde de cada registro se expresa como desvío respecto de la media de su propio grupo de campaña × clase ambiental × campo; lo que se grafica es ese desvío contra los gramos de N por planta.</p>
+    <table style="width:100%;border-collapse:collapse;font-size:12.5px;margin:10px 0">
+      <thead><tr style="background:var(--soft)">
+        <th style="text-align:left;padding:6px 8px;font-weight:800;color:var(--green2)">Tipo de año</th>
+        <th style="text-align:left;padding:6px 8px;font-weight:800;color:var(--green2)">Lluvia siembra–MF</th>
+        <th style="text-align:left;padding:6px 8px;font-weight:800;color:var(--green2)">Banda g N s+f/pl</th>
+        <th style="text-align:left;padding:6px 8px;font-weight:800;color:var(--green2)">Banda g N ferti/pl</th>
+        <th style="text-align:left;padding:6px 8px;font-weight:800;color:var(--green2)">Qué muestran los datos</th></tr></thead>
+      <tbody>
+        <tr><td style="padding:6px 8px">Seco</td><td style="padding:6px 8px">&lt; 300 mm</td><td style="padding:6px 8px"><b>1,30 – 1,70</b></td><td style="padding:6px 8px">0,80 – 1,30</td>
+            <td style="padding:6px 8px">La ganancia se agota en 1,5 g/pl (+0,40 tn/ha). De ahí en adelante no hay respuesta: el agua manda.</td></tr>
+        <tr><td style="padding:6px 8px">Normal</td><td style="padding:6px 8px">300 – 500 mm</td><td style="padding:6px 8px"><b>1,50 – 2,00</b></td><td style="padding:6px 8px">0,90 – 1,40</td>
+            <td style="padding:6px 8px">Máximo entre 1,5 y 1,9 g/pl (+0,65 y +0,36 tn/ha); por encima de 2,5 el efecto se vuelve negativo.</td></tr>
+        <tr><td style="padding:6px 8px">Húmedo</td><td style="padding:6px 8px">&gt; 500 mm</td><td style="padding:6px 8px"><b>2,20 – 2,90</b></td><td style="padding:6px 8px">1,20 – 1,90</td>
+            <td style="padding:6px 8px">Sigue subiendo hasta el extremo observado: +0,44 tn/ha sobre 2,2 g/pl. No se ve meseta en el rango medido.</td></tr>
+      </tbody>
+    </table>
+    <p><b>Cómo leerlo.</b> Es evidencia observacional de lotes comerciales, no un ensayo con dosis asignadas al azar: los grupos comparados difieren en cosas que el control por campaña × ambiente × campo no captura, y los años secos de la serie son 20-21 y 23-24, con lo cual el efecto "seco" y el efecto "esas dos campañas" no se pueden separar del todo. El tramo húmedo por encima de 2,2 g/pl viene sobre todo de 21-22. Tomalo como una regla de decisión bien fundada que conviene seguir midiendo, no como una curva de respuesta calibrada.</p>
+    <p><b>Por qué este criterio da dosis más bajas que el balance.</b> La métrica cuenta sólo el N-NO₃ medido a la siembra más el del fertilizante: deja afuera la mineralización del ciclo. En los años normales de la serie, un rinde medio de 8,4 tn/ha se logró con 1,80 g N/pl sobre unas 58.600 semillas/ha, es decir ~105 kg N/ha entre suelo y fertilizante — apenas 12,5 kg N por tonelada, muy por debajo de los 22 kg N/tn de requerimiento. La diferencia es justamente la mineralización: sumando 60-70 kg N/ha del ciclo, el balance cierra en torno a los 20 kg N/tn y los dos marcos coinciden. Por eso el criterio de g N por planta va a pedir sistemáticamente menos fertilizante que el balance, y no es una contradicción: es la mineralización, que uno contabiliza y el otro absorbe dentro de la calibración.</p>
+    <p>Dicho de otro modo, es el único de los cuatro criterios calibrado sobre resultados reales de estos campos. Cuando se aparta mucho de los otros tres, la pregunta que hay que hacerse es si el supuesto de mineralización del balance es razonable para ese lote.</p>
+    <p>El uso práctico es el diagnóstico: si una zona queda por debajo de la banda, el N está limitando aunque los kg N/ha parezcan razonables; si queda por encima, es fertilizante que en ese tipo de año no se va a pagar. Como el tipo de año se conoce recién al final del ciclo, la lectura honesta es de escenario: mirá la dosis con año normal y después con año seco, y decidí cuánto riesgo querés tomar.</p>
+
+    <h4>6 · Fósforo y azufre</h4>
     <p>Si P Bray está sobre el umbral, se repone una fracción de la extracción del rinde objetivo. Si está por debajo, se suma una corrección parcial hacia el umbral. El N que aporta el arrancador se descuenta de la dosis nitrogenada. La sugerencia de S se activa por debajo del umbral y es orientativa: conviene contrastarla con ensayos locales.</p>
 
-    <h4>6 · Origen de los lotes</h4>
+    <h4>7 · Origen de los lotes</h4>
     <p>El catálogo de lotes, superficies y rotaciones se lee en vivo de la hoja <b>Rotación</b> de la planilla de planificación de Suri Yaco, cada vez que se abre el tablero. El archivo lleva además una copia embebida de esa hoja: si no hay conexión o la planilla no está compartida, el tablero sigue funcionando con esa copia y lo avisa en el encabezado del catálogo. Lo que se lee es la rotación, no los análisis: las variables de laboratorio se cargan a mano.</p>
 
-    <h4>7 · Alcance</h4>
+    <h4>8 · Alcance</h4>
     <p>El tablero ordena la decisión y hace explícitos los supuestos; no reemplaza la calibración regional. Los coeficientes por defecto son referencias de partida para maíz tardío del Chaco semiárido y deberían ajustarse con la red de ensayos y la historia de cada campo. Nada acá contempla el riesgo hídrico, que en el NEA suele explicar más varianza de rinde que la fertilización: el rinde objetivo por zona es el lugar donde ese riesgo entra al cálculo.</p>
 
-    <div class="warn"><b>Sobre el rinde objetivo:</b> es el supuesto que más mueve la dosis en los tres criterios. Conviene fijarlo por zona a partir del historial de rendimiento (mapas de cosecha, NDVI, ambientes) y no del techo potencial, y hacer sensibilidad moviendo el objetivo ±1 tn/ha antes de cerrar la recomendación.</div>
+    <div class="warn"><b>Sobre el rinde objetivo:</b> es el supuesto que más mueve la dosis en los criterios agronómicos y económicos. Conviene fijarlo por zona a partir del historial de rendimiento (mapas de cosecha, NDVI, ambientes) y no del techo potencial, y hacer sensibilidad moviendo el objetivo ±1 tn/ha antes de cerrar la recomendación.</div>
   </div>
 </div></section>
 
@@ -504,6 +580,19 @@ svg.chart text{font-family:inherit}
    TABLERO DE FERTILIZACIÓN NITROGENADA EN MAÍZ — NEA · Opuntia Technology
    Modelo: umbral de N disponible / balance oferta-demanda / óptimo económico
    ========================================================================= */
+
+/* ---- Bandas objetivo de N por planta, por tipo de año ----
+   Calibradas sobre 2.405 registros de maíz de Suri Yaco (campañas 20-21 a 25-26,
+   sin las zonas no fertilizadas), con el rinde centrado dentro de cada
+   campaña × clase ambiental × campo para descontar el efecto del año y del ambiente. */
+const BANDAS = {
+  seco:   {sf:[1.30,1.70], f:[0.80,1.30], mm:'menos de 300 mm', nom:'Seco'},
+  normal: {sf:[1.50,2.00], f:[0.90,1.40], mm:'300 a 500 mm',    nom:'Normal'},
+  humedo: {sf:[2.20,2.90], f:[1.20,1.90], mm:'más de 500 mm',   nom:'Húmedo'}
+};
+
+/* Evidencia histórica: [g N s+f por planta, Δ rinde vs. media del grupo (tn/ha), n, error estándar] */
+const HIST = {"seco": [[0.73,-0.27,194,0.10],[1.10,-0.09,175,0.11],[1.51,0.40,89,0.12],[1.77,0.07,339,0.08],[2.00,0.06,183,0.10]], "normal": [[0.79,-0.64,79,0.15],[1.09,-0.70,25,0.25],[1.50,0.65,21,0.17],[1.78,0.36,105,0.12],[2.04,0.11,163,0.09],[2.34,0.06,85,0.10],[2.70,-0.18,49,0.17]], "humedo": [[0.85,-0.33,97,0.09],[1.20,0.01,143,0.07],[1.43,-0.15,130,0.08],[1.74,-0.17,156,0.07],[2.05,-0.05,149,0.06],[2.31,0.44,84,0.11],[2.86,0.42,107,0.09]]};
 
 /* ---------------- Catálogo de antecesores (crédito kg N/ha) -------------- */
 const ANTECESORES = [
@@ -715,6 +804,11 @@ function leerParams(){
   P.fCorrP    = num($('p_fCorrP').value);
   P.umbS      = num($('p_umbS').value);
   P.dosS      = num($('p_dosS').value);
+  P.tipoAno   = $('p_tipoAno').value;
+  P.dsDef     = num($('p_dsDef').value);
+  P.banda     = [num($('p_bandaMin').value),  num($('p_bandaMax').value)];
+  P.bandaF    = [num($('p_bandaFMin').value), num($('p_bandaFMax').value)];
+  P.objSF     = (P.banda[0] + P.banda[1]) / 2;
 
   P.ant = {};
   ANTECESORES.forEach(([k]) => { const el = $('ant_'+k); if (el) P.ant[k] = num(el.value); });
@@ -781,8 +875,16 @@ function calcZona(z, lote){
   r.dUmb = Math.max(0, r.NdispReq - NdispSuelo - credArr);
 
   /* --- Óptimo técnico --- */
+  /* --- Criterio 3: objetivo de gramos de N por planta --- */
+  r.ds = num(z.ds) || P.dsDef;
+  r.dGnp = r.ds > 0
+    ? Math.max(0, (P.objSF * r.ds / 1000) - r.Ns - credArr)
+    : 0;
+
+  /* --- Óptimo técnico --- */
   r.Ntec = P.base === 'bal'  ? r.dBal
          : P.base === 'umb'  ? r.dUmb
+         : P.base === 'gnp'  ? r.dGnp
          : P.base === 'max'  ? Math.max(r.dBal, r.dUmb)
          : (r.dBal + r.dUmb) / 2;
 
@@ -809,6 +911,12 @@ function calcZona(z, lote){
   r.margenN  = r.ingreso - r.costoN;
   r.bc       = r.costoN > 0 ? r.ingreso / r.costoN : 0;
   r.kgProd   = P.pctN > 0 ? r.dosis / (P.pctN / 100) : 0;
+  /* --- N por planta resultante de la dosis decidida --- */
+  r.gNf  = r.ds > 0 ? (r.dosis + credArr) * 1000 / r.ds : 0;
+  r.gNsf = r.ds > 0 ? (r.Ns + r.dosis + credArr) * 1000 / r.ds : 0;
+  r.estSF = r.gNsf < P.banda[0]  ? 'bajo' : r.gNsf > P.banda[1]  ? 'alto' : 'ok';
+  r.estF  = r.gNf  < P.bandaF[0] ? 'bajo' : r.gNf  > P.bandaF[1] ? 'alto' : 'ok';
+
   r.NdispFin = r.Ns + (P.incMinUmb ? r.Nmin : 0) + r.dosis + credArr;
   r.NporQq   = r.Y > 0 ? r.NdispFin / (r.Y * 10) : 0;
 
@@ -838,6 +946,7 @@ function calcTodo(){
       n020:  pond(l, 'n020', ha), n2060: pond(l, 'n2060', ha),
       dap1:  pond(l, 'dap1', ha), dap2:  pond(l, 'dap2', ha),
       mo:    pond(l, 'mo',   ha), p:     pond(l, 'p',    ha), s: pond(l, 's', ha),
+      ds:    pondDef(l, 'ds', ha, P.dsDef),
       dosis: ''
     };
     const rProm = calcZona(zProm, l);
@@ -855,7 +964,7 @@ function calcTodo(){
 
     out.push({
       lote: l, zonas, ha,
-      dosisMedia: w('dosis'), NMedio: w('Of'),
+      dosisMedia: w('dosis'), NMedio: w('Of'), gNsfMedio: w('gNsf'),
       kgN:    zonas.reduce((a,z) => a + z.dosis * z.ha, 0),
       kgProd: zonas.reduce((a,z) => a + z.kgProd * z.ha, 0),
       kgArr:  zonas.reduce((a,z) => a + z.kgArr * z.ha, 0),
@@ -875,6 +984,11 @@ function pond(l, campo, ha){
   if (ha <= 0) return 0;
   return l.zonas.reduce((a, z) => a + num(z[campo]) * num(z.ha), 0) / ha;
 }
+/* Igual que pond, pero las celdas vacías toman el valor por defecto en vez de cero */
+function pondDef(l, campo, ha, def){
+  if (ha <= 0) return def;
+  return l.zonas.reduce((a, z) => a + (num(z[campo]) || def) * num(z.ha), 0) / ha;
+}
 
 /* ============================ RENDER: LOTES ============================== */
 const FILAS = [
@@ -882,6 +996,7 @@ const FILAS = [
   ['nombre','Nombre de la zona','text'],
   ['ha',   'Superficie · ha', 'num', 1],
   ['y',    'Rinde objetivo · tn/ha', 'num', 0.1],
+  ['ds',   'Dosis de siembra · semillas/ha', 'num', 1000],
   ['grp',  'Análisis de suelo — nitrógeno'],
   ['n020', 'N-NO₃ 0–20 cm · ppm', 'num', 0.1],
   ['n2060','N-NO₃ 20–60 cm · ppm', 'num', 0.1],
@@ -960,7 +1075,7 @@ function resetDosis(lid, zid){
   z.dosis = ''; render();
 }
 function nuevaZona(n){
-  return {id: uid++, nombre:'Zona ' + n, ha:'', y:'', n020:'', n2060:'', mo:'', dap1:'', dap2:'', p:'', s:'', dosis:''};
+  return {id: uid++, nombre:'Zona ' + n, ha:'', y:'', ds:'', n020:'', n2060:'', mo:'', dap1:'', dap2:'', p:'', s:'', dosis:''};
 }
 function addLote(){
   LOTES.push({id: uid++, nombre:'Lote ' + (LOTES.length + 1), antecesor:'soja', fecha:'tardio',
@@ -974,6 +1089,11 @@ function limpiarTodo(){ LOTES = []; render(); }
 </script>
 <script>
 /* ========================= RENDER: RESULTADOS ============================ */
+const PILL = {bajo:'media', ok:'baja', alto:'gris'};
+const TIT  = {bajo:'Por debajo de la banda objetivo — el N limita',
+              ok:'Dentro de la banda objetivo',
+              alto:'Por encima de la banda — sin respuesta esperada'};
+
 function renderResultados(R){
   const t = $('tablaRes');
   if (!R.length){ t.innerHTML = ''; $('kpisTop').innerHTML = ''; $('notaTabla').textContent = ''; return; }
@@ -982,8 +1102,9 @@ function renderResultados(R){
     <th>Lote</th><th>Zona</th><th>ha</th><th>Rinde obj.<br>tn/ha</th>
     <th>N-NO₃ 0-60<br>kg/ha</th><th>Mineraliz.<br>kg/ha</th><th>Antecesor<br>kg/ha</th>
     <th>Oferta<br>kg N/ha</th><th>Demanda<br>kg N/ha</th><th>Respuesta<br>esperada</th>
-    <th>Umbral<br>kg N/ha</th><th>Balance<br>kg N/ha</th><th>Económica<br>kg N/ha</th>
-    <th>Dosis a<br>aplicar</th><th>Producto<br>kg/ha</th><th>Rinde esp.<br>tn/ha</th>
+    <th>Umbral<br>kg N/ha</th><th>Balance<br>kg N/ha</th><th>g N/pl<br>kg N/ha</th><th>Económica<br>kg N/ha</th>
+    <th>Dosis a<br>aplicar</th><th>Semillas<br>/ha</th><th>g N ferti<br>/pl</th><th>g N s+f<br>/pl</th>
+    <th>Producto<br>kg/ha</th><th>Rinde esp.<br>tn/ha</th>
     <th>Costo N<br>US$/ha</th><th>Margen N<br>US$/ha</th><th>P₂O₅<br>kg/ha</th><th>S<br>kg/ha</th>
   </tr></thead>`;
 
@@ -1001,11 +1122,15 @@ function renderResultados(R){
         <td><span class="pill ${z.nivel}">${z.nivel}</span></td>
         <td style="color:#00897B;font-weight:700">${fmt(z.dUmb)}</td>
         <td style="color:#1565C0;font-weight:700">${fmt(z.dBal)}</td>
+        <td style="color:#B0288C;font-weight:700">${fmt(z.dGnp)}</td>
         <td style="color:#96690c;font-weight:700">${fmt(z.dEco)}</td>
         <td><input class="adj" type="number" step="5" value="${Math.round(z.dosis)}"
              onchange="setDosis(${g.lote.id},${z.id},this.value)"
              title="${z.auto ? 'Valor automático = óptimo económico. Editá para fijar tu decisión.' : 'Dosis fijada manualmente. Borrá el valor para volver al automático.'}"
              style="${z.auto ? '' : 'background:#fff;border-color:var(--accent)'}"></td>
+        <td>${fmt(z.ds)}</td>
+        <td><span class="pill ${PILL[z.estF]}" title="${TIT[z.estF]} · banda ${fmt(P.bandaF[0],2)}–${fmt(P.bandaF[1],2)}">${fmt(z.gNf,2)}</span></td>
+        <td><span class="pill ${PILL[z.estSF]}" title="${TIT[z.estSF]} · banda ${fmt(P.banda[0],2)}–${fmt(P.banda[1],2)}">${fmt(z.gNsf,2)}</span></td>
         <td>${fmt(z.kgProd)}</td><td>${fmt(z.rindeEsp,2)}</td>
         <td>${fmt(z.costoN)}</td>
         <td class="strong" style="color:${z.margenN < 0 ? 'var(--rojo)' : 'var(--green)'}">${fmt(z.margenN)}</td>
@@ -1018,8 +1143,10 @@ function renderResultados(R){
       <td colspan="2">${esc(g.lote.nombre)} · total</td>
       <td>${fmt(g.ha,1)}</td><td>${fmt(g.ha > 0 ? g.prodEsp / g.ha : 0, 1)}</td>
       <td colspan="4">Oferta media ${fmt(g.NMedio)} kg N/ha</td>
-      <td colspan="5"></td>
-      <td>${fmt(g.dosisMedia)}</td><td>${fmt(g.kgProd)} kg</td><td>${fmt(g.prodEsp,1)} tn</td>
+      <td colspan="6"></td>
+      <td>${fmt(g.dosisMedia)}</td><td colspan="2"></td>
+      <td><b>${fmt(g.gNsfMedio,2)}</b></td>
+      <td>${fmt(g.kgProd)} kg</td><td>${fmt(g.prodEsp,1)} tn</td>
       <td>${fmt(g.costoN)}</td><td>${fmt(g.margen)}</td><td colspan="2"></td></tr>`;
     return zs + sum;
   }).join('');
@@ -1036,6 +1163,9 @@ function renderResultados(R){
   const margen = R.reduce((a,g) => a + g.margen, 0);
   const dU     = R.reduce((a,g) => a + g.margenUnif, 0);
   const gana   = margen - dU;
+  const zonas  = R.flatMap(g => g.zonas);
+  const nZonas = zonas.length;
+  const nOk    = zonas.filter(z => z.estSF === 'ok').length;
 
   $('kpisTop').innerHTML = [
     ['accent', fmt(ha,0), 'ha', 'Superficie total'],
@@ -1044,6 +1174,7 @@ function renderResultados(R){
     ['blue',   fmt(costoN + costoP), 'US$', 'Costo total N + P'],
     ['',       fmt(ha > 0 ? (costoN + costoP) / ha : 0), 'US$/ha', 'Costo por hectárea'],
     ['accent', fmt(prod, 0), 'tn', 'Producción esperada'],
+    [nOk === nZonas ? 'accent' : 'alert', nOk + '/' + nZonas, '', 'Zonas dentro de la banda de g N/pl'],
     [margen < 0 ? 'alert' : 'accent', fmt(margen), 'US$', 'Margen del N sobre el conjunto'],
     [gana < 0 ? 'alert' : 'accent', (gana >= 0 ? '+' : '') + fmt(gana), 'US$', 'Ganancia vs. dosis uniforme']
   ].map(k => `<div class="kpi ${k[0]}"><div class="n">${k[1]}<small>${k[2]}</small></div><div class="l">${k[3]}</div></div>`).join('');
@@ -1053,6 +1184,9 @@ function renderResultados(R){
   $('notaTabla').innerHTML = `La columna <b>Dosis a aplicar</b> arranca en el óptimo económico (${nAuto} de ${nTot} zonas en automático) `
     + `y es editable zona por zona. El rinde esperado, el costo y el margen se recalculan sobre la curva de respuesta de cada zona. `
     + `Relación de precios vigente: <b>${fmt(P.RP,1)} kg de grano por kg de N</b> — cada kg de N necesita esa respuesta marginal para pagarse.`
+    + `<br>Tipo de año <b>${BANDAS[P.tipoAno].nom.toLowerCase()}</b> (${BANDAS[P.tipoAno].mm} entre siembra y madurez fisiológica): `
+    + `la banda objetivo es <b>${fmt(P.banda[0],2)}–${fmt(P.banda[1],2)} g de N por planta</b> contando suelo más fertilizante. `
+    + `Verde = dentro de la banda; ámbar = el N limita; gris = por encima, sin respuesta esperada.`
     + `<br>Cuando <b>umbral</b> y <b>balance</b> se separan mucho en una zona, no es un error del cálculo: el umbral computa el N del fertilizante uno a uno contra un coeficiente calibrado, mientras que el balance descuenta la mineralización estimada y castiga la dosis por la eficiencia de recuperación. La brecha mide cuánto pesa el supuesto de mineralización — es la primera variable a revisar antes de cerrar la dosis.`;
 }
 
@@ -1126,15 +1260,22 @@ function chartDosis(R){
   s += `<line x1="${x0}" y1="${y0}" x2="${W - 14}" y2="${y0}" stroke="#d6c9e3" stroke-width="1.5"/>`;
   s += txt(14, (y0 + y1) / 2, 'kg N / ha', {rot:-90, fs:10.5, w:700});
 
-  const cols = ['#00897B', '#1565C0', '#E8A21A', '#6A1B9A'];
+  const cols = ['#00897B', '#1565C0', '#B0288C', '#E8A21A'];
+  const labs = ['Umbral', 'Balance', 'Objetivo g N/pl', 'Económica'];
   zonas.forEach((z, i) => {
     const bx = x0 + 10 + i * gw, bw = (gw - 18) / 4;
-    [z.dUmb, z.dBal, z.dEco, z.dosis].forEach((v, k) => {
+    [z.dUmb, z.dBal, z.dGnp, z.dEco].forEach((v, k) => {
       const h = Math.max(0, y0 - sy(v));
       s += `<rect x="${bx + k * bw}" y="${sy(v)}" width="${bw - 1.5}" height="${h}" fill="${cols[k]}" rx="2">`
-        + `<title>${esc(z.nombre)} — ${['Umbral','Balance','Económica','A aplicar'][k]}: ${fmt(v)} kg N/ha</title></rect>`;
-      if (k === 3 && v > 0) s += txt(bx + k * bw + bw / 2, sy(v) - 4, fmt(v), {fs:9.5, w:800, col:'#6A1B9A'});
+        + `<title>${esc(z.nombre)} — ${labs[k]}: ${fmt(v)} kg N/ha</title></rect>`;
     });
+    /* la dosis decidida va como marca sobre el grupo, no como una quinta barra */
+    if (z.dosis > 0){
+      s += `<line x1="${bx - 3}" y1="${sy(z.dosis)}" x2="${bx + (gw - 18) + 3}" y2="${sy(z.dosis)}" `
+        + `stroke="#4A148C" stroke-width="2.6" stroke-linecap="round">`
+        + `<title>${esc(z.nombre)} — dosis a aplicar: ${fmt(z.dosis)} kg N/ha</title></line>`
+        + txt(bx + (gw - 18) / 2, sy(z.dosis) - 5, fmt(z.dosis), {fs:9.5, w:800, col:'#4A148C'});
+    }
     s += txt(bx + (gw - 18) / 2, y0 + 15, esc(z.nombre).slice(0, 13), {fs:10, w:700, col:'#332a3d'});
     s += txt(bx + (gw - 18) / 2, y0 + 28, esc(z.lote).slice(0, 15), {fs:9.5});
   });
@@ -1176,6 +1317,92 @@ function chartBalance(R){
     s += txt(bx + bw / 2, y0 + 28, esc(z.lote).slice(0, 13), {fs:9.5});
   });
   $('chBalance').innerHTML = s + '</svg>';
+}
+
+/* --- Gráfico 2b: N por planta contra la banda objetivo --- */
+function chartNpl(R){
+  const zonas = [];
+  R.forEach(g => g.zonas.forEach(z => zonas.push({lote:g.lote.nombre, ...z})));
+  if (!zonas.length){ $('chNpl').innerHTML = ''; return; }
+
+  const gw = Math.max(52, Math.min(100, 560 / zonas.length));
+  const W = Math.max(450, 72 + zonas.length * gw + 18), H = 320;
+  const x0 = 52, y0 = 250, y1 = 24;
+  const max = Math.max(1, ...zonas.map(z => z.gNsf), P.banda[1] * 1.25);
+  const sy = v => y0 - (v / max) * (y0 - y1);
+
+  let s = svgOpen(W, H);
+  /* la banda objetivo, como franja de fondo */
+  s += `<rect x="${x0}" y="${sy(P.banda[1])}" width="${W - 14 - x0}" height="${Math.max(0, sy(P.banda[0]) - sy(P.banda[1]))}" `
+     + `fill="#B0288C" opacity=".13"/>`;
+  [P.banda[0], P.banda[1]].forEach(v => {
+    s += `<line x1="${x0}" y1="${sy(v)}" x2="${W - 14}" y2="${sy(v)}" stroke="#B0288C" stroke-width="1.2" stroke-dasharray="5 4"/>`;
+  });
+  for (let i = 0; i <= 4; i++) s += gridY(x0, W - 14, sy(max * i / 4), max * i / 4, 1);
+  s += `<line x1="${x0}" y1="${y0}" x2="${W - 14}" y2="${y0}" stroke="#d6c9e3" stroke-width="1.5"/>`;
+  s += txt(14, (y0 + y1) / 2, 'g de N por planta', {rot:-90, fs:10.5, w:700});
+  s += txt(x0 + 5, sy(P.banda[1]) - 6, 'banda objetivo · año ' + BANDAS[P.tipoAno].nom.toLowerCase(),
+           {a:'start', fs:9.5, w:700, col:'#8e2478'});
+
+  zonas.forEach((z, i) => {
+    const bx = x0 + 12 + i * gw, bw = gw - 24;
+    const suelo = z.ds > 0 ? z.Ns * 1000 / z.ds : 0;
+    let acc = 0;
+    [['#4A148C', suelo, 'N del suelo'], ['#E8A21A', Math.max(0, z.gNsf - suelo), 'N del fertilizante']]
+      .forEach(([c, v, lab]) => {
+        if (v <= 0) return;
+        const yTop = sy(acc + v), hh = sy(acc) - yTop;
+        s += `<rect x="${bx}" y="${yTop}" width="${bw}" height="${hh}" fill="${c}">`
+           + `<title>${esc(z.nombre)} — ${lab}: ${fmt(v, 2)} g/pl</title></rect>`;
+        acc += v;
+      });
+    const col = z.estSF === 'ok' ? '#2E7D32' : z.estSF === 'bajo' ? '#96690c' : '#6c6377';
+    s += txt(bx + bw / 2, sy(z.gNsf) - 6, fmt(z.gNsf, 2), {fs:10, w:800, col});
+    s += txt(bx + bw / 2, y0 + 15, esc(z.nombre).slice(0, 12), {fs:10, w:700, col:'#332a3d'});
+    s += txt(bx + bw / 2, y0 + 28, esc(z.lote).slice(0, 14), {fs:9.5});
+  });
+  $('chNpl').innerHTML = s + '</svg>';
+}
+
+/* --- Gráfico 2c: evidencia histórica que sustenta las bandas --- */
+function chartHist(){
+  const W = 470, H = 320, x0 = 54, x1 = W - 16, y0 = 244, y1 = 24;
+  const todos = [].concat(HIST.seco, HIST.normal, HIST.humedo);
+  const xMax = 3.2;
+  const yMin = -0.9, yMax = 0.9;
+  const sx = v => x0 + (v / xMax) * (x1 - x0);
+  const sy = v => y0 - ((v - yMin) / (yMax - yMin)) * (y0 - y1);
+
+  let s = svgOpen(W, H);
+  /* banda objetivo del tipo de año elegido */
+  s += `<rect x="${sx(P.banda[0])}" y="${y1}" width="${Math.max(0, sx(P.banda[1]) - sx(P.banda[0]))}" `
+     + `height="${y0 - y1}" fill="#B0288C" opacity=".10"/>`;
+  for (let i = 0; i <= 4; i++){
+    const v = yMin + (yMax - yMin) * i / 4;
+    s += gridY(x0, x1, sy(v), v, 1);
+  }
+  s += `<line x1="${x0}" y1="${sy(0)}" x2="${x1}" y2="${sy(0)}" stroke="#6c6377" stroke-width="1.4"/>`;
+
+  const SER = [['seco', '#C1873B', 'Seco'], ['normal', '#1565C0', 'Normal'], ['humedo', '#00897B', 'Húmedo']];
+  SER.forEach(([k, col, nom]) => {
+    const p = HIST[k];
+    let d = '';
+    p.forEach((q, i) => { d += (i ? ' L' : 'M') + sx(q[0]).toFixed(1) + ',' + sy(q[1]).toFixed(1); });
+    const activo = P.tipoAno === k;
+    s += `<path d="${d}" fill="none" stroke="${col}" stroke-width="${activo ? 3 : 1.6}" `
+       + `opacity="${activo ? 1 : .45}" stroke-linejoin="round"/>`;
+    p.forEach(q => {
+      s += `<line x1="${sx(q[0])}" y1="${sy(q[1] - q[3])}" x2="${sx(q[0])}" y2="${sy(q[1] + q[3])}" `
+         + `stroke="${col}" stroke-width="1.2" opacity="${activo ? .8 : .3}"/>`;
+      s += `<circle cx="${sx(q[0])}" cy="${sy(q[1])}" r="${activo ? 4 : 2.6}" fill="${col}" `
+         + `opacity="${activo ? 1 : .45}"><title>${nom} · ${fmt(q[0],2)} g N/pl → `
+         + `${q[1] >= 0 ? '+' : ''}${fmt(q[1],2)} tn/ha (n=${q[2]}, ee ${fmt(q[3],2)})</title></circle>`;
+    });
+  });
+  for (let i = 0; i <= 4; i++) s += txt(sx(xMax * i / 4), y0 + 15, fmt(xMax * i / 4, 1), {fs:10});
+  s += txt((x0 + x1) / 2, y0 + 32, 'g de N por planta (suelo + fertilizante)', {fs:10.5, w:700});
+  s += txt(14, (y0 + y1) / 2, 'Δ rinde vs. su grupo · tn/ha', {rot:-90, fs:10.5, w:700});
+  $('chHist').innerHTML = s + '</svg>';
 }
 
 /* --- Gráfico 3: curva de respuesta --- */
@@ -1268,6 +1495,8 @@ function calcRender(soloResultados){
   renderPlan(R);
   chartDosis(R);
   chartBalance(R);
+  chartNpl(R);
+  chartHist();
 
   /* selector de zona para la curva de respuesta */
   const sel = $('selZona');
@@ -1295,6 +1524,7 @@ function labEjemplo(){
     l.zonas.forEach(z => {
       const t = (yMax > yMin) ? (num(z.y) - yMin) / (yMax - yMin) : 0.5;   // 0 = peor ambiente
       const v = (a, b, d) => String(Math.round((a + (b - a) * t) * Math.pow(10, d)) / Math.pow(10, d));
+      if (z.ds    === '') z.ds    = String(Math.round((52000 + 12000 * t) / 500) * 500);
       if (z.n020  === '') z.n020  = v(7, 14, 1);
       if (z.n2060 === '') z.n2060 = v(4, 8, 1);
       if (z.mo    === '') z.mo    = v(1.5, 2.7, 1);
@@ -1353,7 +1583,7 @@ function syAgregar(){
       const f = nz === 1 ? 1 : 1 - 0.15 + (0.30 * i) / (nz - 1);
       const haZ = i === nz - 1 ? x.ha - Math.round(x.ha / nz) * (nz - 1) : Math.round(x.ha / nz);
       zonas.push({id: uid++, nombre: nz === 1 ? 'Lote completo' : 'Ambiente ' + (i + 1),
-        ha: haZ, y: Math.round(Yref * f * 10) / 10,
+        ha: haZ, y: Math.round(Yref * f * 10) / 10, ds:'',
         n020:'', n2060:'', mo:'', dap1:'', dap2:'', p:'', s:'', dosis:''});
     }
     LOTES.push({id: uid++, nombre: l.campo + ' — ' + l.lote, antecesor: a.key, fecha:'tardio',
@@ -1373,6 +1603,12 @@ function initEventos(){
   document.querySelectorAll('#supuestos input, #supuestos select').forEach(el => {
     el.addEventListener('input',  () => calcRender());
     el.addEventListener('change', () => calcRender());
+  });
+  $('p_tipoAno').addEventListener('change', e => {
+    const b = BANDAS[e.target.value];
+    $('p_bandaMin').value  = b.sf[0]; $('p_bandaMax').value  = b.sf[1];
+    $('p_bandaFMin').value = b.f[0];  $('p_bandaFMax').value = b.f[1];
+    calcRender();
   });
   $('p_fuenteN').addEventListener('change', e => { $('p_pfertN').value = FUENTES_N[e.target.value].precio; calcRender(); });
   $('p_fuenteP').addEventListener('change', e => { $('p_pfertP').value = FUENTES_P[e.target.value].precio; calcRender(); });
