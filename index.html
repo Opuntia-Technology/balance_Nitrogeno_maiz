@@ -88,8 +88,23 @@ details.panel>summary .tag{margin-left:auto;font-size:11.5px;font-weight:650;col
   margin:18px 0 0;padding-top:14px;border-top:1px dashed var(--line)}
 .subhead:first-child{border-top:none;padding-top:0;margin-top:8px}
 .help{font-size:11.5px;color:var(--muted);font-style:italic;margin:6px 0 0}
-.info{cursor:help;display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;
-  border-radius:50%;background:#eadff4;color:var(--green2);font-size:9.5px;font-weight:800;font-style:normal}
+.info{cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;
+  border-radius:50%;background:#eadff4;color:var(--green2);font-size:10px;font-weight:800;font-style:normal;
+  transition:.15s;user-select:none}
+.info:hover{background:var(--green2);color:#fff;transform:scale(1.12)}
+.pop{position:absolute;z-index:200;background:var(--card);border:1px solid var(--line);border-radius:14px;
+  box-shadow:0 8px 32px rgba(35,20,50,.20);padding:16px 18px 15px;font-size:13px;line-height:1.5;color:#332a3d}
+.pop h4{margin:0 0 4px;font-size:14.5px;font-weight:800;color:var(--green);padding-right:22px;line-height:1.3}
+.pop p{margin:6px 0}
+.pop b{color:var(--green2)}
+.pop ul{margin:5px 0;padding-left:17px}
+.pop li{margin:3px 0}
+.pop .lbl{display:block;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--muted);margin:13px 0 1px;padding-top:9px;border-top:1px dashed var(--line)}
+.pop .lbl:first-of-type{border-top:none;padding-top:0;margin-top:10px}
+.pop-x{position:absolute;top:8px;right:10px;border:none;background:transparent;font-size:18px;line-height:1;
+  color:var(--muted);cursor:pointer;padding:2px 5px;border-radius:6px}
+.pop-x:hover{color:var(--rojo);background:#fbeceb}
 
 /* ---------- LOTES ---------- */
 .lote{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden}
@@ -178,6 +193,7 @@ svg.chart text{font-family:inherit}
 </style>
 </head>
 <body>
+<div id="pop" class="pop" hidden></div>
 
 <header class="hero">
   <div class="wrap hero-in">
@@ -215,7 +231,7 @@ svg.chart text{font-family:inherit}
 
 <section id="supuestos"><div class="wrap">
   <div class="sec-head"><h2>Supuestos del modelo</h2>
-    <span class="k">Todos los coeficientes son editables — los valores por defecto son referencias para maíz tardío del Chaco semiárido</span></div>
+    <span class="k">Todos los coeficientes son editables — tocá el <span class="info" style="cursor:default">?</span> de cada uno para ver qué significa, en qué rango se mueve y sobre qué criterio pesa</span></div>
 
   <details class="panel" open><summary><span class="chev">▶</span> Coeficientes agronómicos y económicos <span class="tag">abrir / cerrar</span></summary>
   <div class="panel-body">
@@ -223,16 +239,16 @@ svg.chart text{font-family:inherit}
     <div class="subhead">Demanda del cultivo</div>
     <div class="pgrid">
       <div class="fld"><label>Requerimiento unitario de N <span class="u">kg N / tn grano</span>
-        <span class="info" title="N total absorbido por tonelada de grano producido. Maíz: 19–25; valor usual 22.">?</span></label>
+        <span class="info" onclick="ayuda('RU',event)" title="Ver explicación">?</span></label>
         <input type="number" step="0.5" id="p_RU" value="22"></div>
       <div class="fld"><label>Coeficiente de N disponible <span class="u">kg N / qq</span>
-        <span class="info" title="Umbral de N disponible (N-NO3 0-60 cm + fertilizante) por quintal de rinde objetivo. Temprano 2,0–2,2; tardío/2da 1,7–1,9.">?</span></label>
+        <span class="info" onclick="ayuda('coef',event)" title="Ver explicación">?</span></label>
         <input type="number" step="0.05" id="p_coef" value="1.85"></div>
       <div class="fld"><label>Eficiencia de recuperación del N fertilizante <span class="u">%</span>
-        <span class="info" title="Recuperación aparente del N aplicado. 45–65% según fuente, momento y suelo. En suelos arenosos del NEA con lluvias intensas, usar el rango bajo.">?</span></label>
+        <span class="info" onclick="ayuda('eur',event)" title="Ver explicación">?</span></label>
         <input type="number" step="1" id="p_eur" value="55"></div>
       <div class="fld"><label>Criterio base para el óptimo técnico
-        <span class="info" title="Dosis que se toma como techo de la curva de respuesta y punto de partida del cálculo económico.">?</span></label>
+        <span class="info" onclick="ayuda('base',event)" title="Ver explicación">?</span></label>
         <select id="p_base">
           <option value="prom" selected>Promedio de ambos criterios</option>
           <option value="bal">Balance oferta–demanda</option>
@@ -244,20 +260,20 @@ svg.chart text{font-family:inherit}
 
     <div class="subhead">Oferta del suelo</div>
     <div class="pgrid">
-      <div class="fld"><label>Densidad aparente 0–20 cm <span class="u">g/cm³</span></label>
+      <div class="fld"><label>Densidad aparente 0–20 cm <span class="u">g/cm³</span> <span class="info" onclick="ayuda('dap',event)" title="Ver explicación">?</span></label>
         <input type="number" step="0.01" id="p_dap1" value="1.25"></div>
-      <div class="fld"><label>Densidad aparente 20–60 cm <span class="u">g/cm³</span></label>
+      <div class="fld"><label>Densidad aparente 20–60 cm <span class="u">g/cm³</span> <span class="info" onclick="ayuda('dap',event)" title="Ver explicación">?</span></label>
         <input type="number" step="0.01" id="p_dap2" value="1.35"></div>
       <div class="fld"><label>N orgánico como fracción de la MO <span class="u">kg N / kg MO</span>
-        <span class="info" title="La MO tiene ~58% de C; con relación C/N de 11–12 el N representa ~5% de la MO.">?</span></label>
+        <span class="info" onclick="ayuda('fNMO',event)" title="Ver explicación">?</span></label>
         <input type="number" step="0.001" id="p_fNMO" value="0.05"></div>
       <div class="fld"><label>Mineralización en el ciclo <span class="u">% del N orgánico</span>
-        <span class="info" title="Fracción del N orgánico de 0-20 cm que se mineraliza durante el ciclo del cultivo, después del muestreo. Templado 1,5–2%; NEA cálido 2–3%.">?</span></label>
+        <span class="info" onclick="ayuda('kmin',event)" title="Ver explicación">?</span></label>
         <input type="number" step="0.1" id="p_kmin" value="2.2"></div>
       <div class="fld"><label>Factor de mineralización · maíz tardío <span class="u">×</span>
-        <span class="info" title="El maíz tardío atraviesa un período más cálido y largo: mayor mineralización acumulada, pero también mayor riesgo de lavado.">?</span></label>
+        <span class="info" onclick="ayuda('fTardio',event)" title="Ver explicación">?</span></label>
         <input type="number" step="0.05" id="p_fTardio" value="1.15"></div>
-      <div class="fld"><label>Incluir mineralización en el criterio de umbral</label>
+      <div class="fld"><label>Incluir mineralización en el criterio de umbral <span class="info" onclick="ayuda('incMinUmb',event)" title="Ver explicación">?</span></label>
         <select id="p_incMinUmb"><option value="0" selected>No · sólo N-NO₃ 0–60 (clásico)</option>
           <option value="1">Sí · N-NO₃ + mineralización</option></select></div>
     </div>
@@ -265,19 +281,20 @@ svg.chart text{font-family:inherit}
     <div class="subhead">Nitrógeno por planta <span class="u" style="font-weight:600;text-transform:none;letter-spacing:0">— diagnóstico calibrado sobre 2.405 registros de Suri Yaco (campañas 20-21 a 25-26)</span></div>
     <div class="pgrid">
       <div class="fld"><label>Tipo de año esperado
-        <span class="info" title="Clasificación por lluvia acumulada entre siembra y madurez fisiológica: seco &lt;300 mm, normal 300-500 mm, húmedo &gt;500 mm.">?</span></label>
+        <span class="info" onclick="ayuda('tipoAno',event)" title="Ver explicación">?</span></label>
         <select id="p_tipoAno">
           <option value="seco">Seco · &lt;300 mm</option>
           <option value="normal" selected>Normal · 300–500 mm</option>
           <option value="humedo">Húmedo · &gt;500 mm</option>
         </select></div>
-      <div class="fld"><label>Dosis de siembra por defecto <span class="u">semillas/ha</span>
-        <span class="info" title="Se usa en las zonas que no tengan dosis de siembra cargada. Con siembra variable, cargá la de cada ambiente.">?</span></label>
-        <input type="number" step="1000" id="p_dsDef" value="60000"></div>
+      <div class="fld"><label>Dosis de siembra de referencia <span class="u">semillas/ha</span>
+        <span class="info" onclick="ayuda('dsRef',event)" title="Ver explicación">?</span></label>
+        <input type="number" step="1000" id="p_dsDef" value="60000">
+        <span class="help" style="margin:2px 0 0">Sólo se copia a las zonas nuevas. Cada zona lleva la suya.</span></div>
       <div class="fld"><label>Banda objetivo de N s+f por planta <span class="u">g N/pl · mínimo</span>
-        <span class="info" title="Rango de gramos de N por planta (suelo 0-60 + fertilizante) donde el rinde relativo deja de mejorar. Cambia con el tipo de año.">?</span></label>
+        <span class="info" onclick="ayuda('banda',event)" title="Ver explicación">?</span></label>
         <input type="number" step="0.05" id="p_bandaMin" value="1.5"></div>
-      <div class="fld"><label>Banda objetivo de N s+f por planta <span class="u">g N/pl · máximo</span></label>
+      <div class="fld"><label>Banda objetivo de N s+f por planta <span class="u">g N/pl · máximo</span> <span class="info" onclick="ayuda('banda',event)" title="Ver explicación">?</span></label>
         <input type="number" step="0.05" id="p_bandaMax" value="2.0"></div>
       <div class="fld"><label>Banda objetivo de N del fertilizante <span class="u">g N/pl · mínimo</span></label>
         <input type="number" step="0.05" id="p_bandaFMin" value="0.9"></div>
@@ -286,15 +303,15 @@ svg.chart text{font-family:inherit}
     </div>
     <p class="help">Al cambiar el tipo de año, las cuatro bandas se reescriben con los valores calibrados; después podés ajustarlas a mano. Con siembra y fertilización variables, los kg N/ha esconden el efecto de la densidad: dos ambientes con la misma dosis pero distinta población le entregan a cada planta cantidades muy distintas de N.</p>
 
-    <div class="subhead">Aporte del antecesor <span class="u" style="font-weight:600;text-transform:none;letter-spacing:0">— crédito (+) o inmovilización (−) de N, en kg N/ha</span></div>
+    <div class="subhead">Aporte del antecesor <span class="u" style="font-weight:600;text-transform:none;letter-spacing:0">— crédito (+) o inmovilización (−) de N, en kg N/ha</span> <span class="info" onclick="ayuda('antecesor',event)" title="Ver explicación">?</span></div>
     <div class="pgrid" id="antGrid"></div>
 
     <div class="subhead">Precios y fertilizantes</div>
     <div class="pgrid">
       <div class="fld"><label>Precio del grano de maíz <span class="u">US$ / tn</span>
-        <span class="info" title="Precio neto puesto en zona, descontando flete y gastos de comercialización.">?</span></label>
+        <span class="info" onclick="ayuda('pgrano',event)" title="Ver explicación">?</span></label>
         <input type="number" step="1" id="p_pgrano" value="160"></div>
-      <div class="fld"><label>Fuente nitrogenada</label>
+      <div class="fld"><label>Fuente nitrogenada <span class="info" onclick="ayuda('fuenteN',event)" title="Ver explicación">?</span></label>
         <select id="p_fuenteN">
           <option value="urea" selected>Urea granulada · 46-0-0</option>
           <option value="ureap">Urea protegida NBPT · 46-0-0</option>
@@ -308,15 +325,15 @@ svg.chart text{font-family:inherit}
       <div class="fld"><label>Costo del N <span class="u">US$ / kg N</span></label>
         <input type="number" id="p_pN" value="1.39" readonly style="background:#faf7fd;font-weight:750"></div>
       <div class="fld"><label>Relación de precios <span class="u">kg grano / kg N</span>
-        <span class="info" title="Cuántos kilos de maíz hay que producir de más para pagar un kilo de N. Es el umbral de respuesta marginal que define el óptimo económico.">?</span></label>
+        <span class="info" onclick="ayuda('RP',event)" title="Ver explicación">?</span></label>
         <input type="number" id="p_RPview" readonly style="background:#faf7fd;font-weight:750"></div>
       <div class="fld"><label>Factor de eficiencia de la fuente <span class="u">×</span>
-        <span class="info" title="Multiplica la eficiencia de recuperación base. Recoge sobre todo la volatilización: la urea con inhibidor de ureasa y las fuentes nítricas pierden menos que la urea granulada, tomada como referencia 1,00. Editable.">?</span></label>
+        <span class="info" onclick="ayuda('efFuente',event)" title="Ver explicación">?</span></label>
         <input type="number" step="0.01" id="p_efFuente" value="1.00"></div>
-      <div class="fld"><label>Azufre de la fuente nitrogenada <span class="u">% S</span></label>
+      <div class="fld"><label>Azufre de la fuente nitrogenada <span class="u">% S</span> <span class="info" onclick="ayuda('sFuente',event)" title="Ver explicación">?</span></label>
         <input type="number" step="0.1" id="p_sFuenteN" value="0" readonly style="background:#faf7fd;font-weight:750"></div>
       <div class="fld"><label>Costo del azufre <span class="u">US$ / kg S</span>
-        <span class="info" title="Costo del kg de S de la fuente azufrada que se use para cubrir el faltante (sulfato de amonio ≈ 2,00; yeso agrícola ≈ 1,00). Se cobra sólo sobre el S que la fuente nitrogenada no aporta.">?</span></label>
+        <span class="info" onclick="ayuda('pS',event)" title="Ver explicación">?</span></label>
         <input type="number" step="0.05" id="p_pS" value="2.00"></div>
       <div class="fld"><label>Fertilizante arrancador fosforado</label>
         <select id="p_fuenteP">
@@ -327,29 +344,29 @@ svg.chart text{font-family:inherit}
       <div class="fld"><label>Precio del arrancador <span class="u">US$ / tn puesta en lote</span></label>
         <input type="number" step="5" id="p_pfertP" value="1080"></div>
       <div class="fld"><label>Descontar el N del arrancador de la dosis
-        <span class="info" title="El MAP o el DAP aportan N que forma parte de la oferta. Si se descuenta, la dosis de urea se ajusta hacia abajo.">?</span></label>
+        <span class="info" onclick="ayuda('descArr',event)" title="Ver explicación">?</span></label>
         <select id="p_descArr"><option value="1" selected>Sí</option><option value="0">No</option></select></div>
     </div>
 
     <div class="subhead">Fósforo y azufre</div>
     <div class="pgrid">
       <div class="fld"><label>Umbral crítico de P Bray-1 <span class="u">ppm</span>
-        <span class="info" title="Nivel por debajo del cual la respuesta a P es probable. Maíz: 13–18 ppm en 0-20 cm.">?</span></label>
+        <span class="info" onclick="ayuda('umbP',event)" title="Ver explicación">?</span></label>
         <input type="number" step="0.5" id="p_umbP" value="15"></div>
-      <div class="fld"><label>Extracción de P en grano <span class="u">kg P₂O₅ / tn</span></label>
+      <div class="fld"><label>Extracción de P en grano <span class="u">kg P₂O₅ / tn</span> <span class="info" onclick="ayuda('extP',event)" title="Ver explicación">?</span></label>
         <input type="number" step="0.1" id="p_extP" value="8"></div>
       <div class="fld"><label>Factor de reposición de P <span class="u">×</span>
-        <span class="info" title="Proporción de la extracción que se repone cuando el suelo está por encima del umbral.">?</span></label>
+        <span class="info" onclick="ayuda('fRepP',event)" title="Ver explicación">?</span></label>
         <input type="number" step="0.05" id="p_fRepP" value="0.8"></div>
       <div class="fld"><label>Corrección por ppm faltante <span class="u">kg P₂O₅ / ppm</span>
-        <span class="info" title="Cuánto P₂O₅ hace falta para subir 1 ppm de P Bray en 0-20 cm. Suele estar entre 4 y 7 kg según textura y capacidad de fijación.">?</span></label>
+        <span class="info" onclick="ayuda('kBuild',event)" title="Ver explicación">?</span></label>
         <input type="number" step="0.5" id="p_kBuild" value="5"></div>
-      <div class="fld"><label>Fracción de la corrección a aplicar este año <span class="u">×</span></label>
+      <div class="fld"><label>Fracción de la corrección a aplicar este año <span class="u">×</span> <span class="info" onclick="ayuda('fCorrP',event)" title="Ver explicación">?</span></label>
         <input type="number" step="0.05" id="p_fCorrP" value="0.35"></div>
       <div class="fld"><label>Umbral crítico de S-SO₄ <span class="u">ppm</span>
-        <span class="info" title="0-20 cm. Por debajo de 8-10 ppm la respuesta a azufre es probable, sobre todo en suelos de baja MO y alta producción.">?</span></label>
+        <span class="info" onclick="ayuda('umbS',event)" title="Ver explicación">?</span></label>
         <input type="number" step="0.5" id="p_umbS" value="10"></div>
-      <div class="fld"><label>Dosis de S por tn de rinde objetivo <span class="u">kg S / tn</span></label>
+      <div class="fld"><label>Dosis de S por tn de rinde objetivo <span class="u">kg S / tn</span> <span class="info" onclick="ayuda('dosS',event)" title="Ver explicación">?</span></label>
         <input type="number" step="0.5" id="p_dosS" value="1.5"></div>
     </div>
 
@@ -404,6 +421,7 @@ svg.chart text{font-family:inherit}
   <div id="lotesCont"></div>
   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
     <button class="btn primary" onclick="addLote()">+ Agregar lote en blanco</button>
+    <button class="btn" onclick="copiarDsRef()" title="Escribe la dosis de siembra de referencia en las zonas que la tengan vacía. Después ajustá cada una.">Copiar la dosis de siembra de referencia a las zonas vacías</button>
     <button class="btn" onclick="labEjemplo()" title="Rellena sólo las celdas vacías con valores plausibles de la zona, para ver el tablero funcionando. Reemplazalos por los resultados reales del laboratorio.">Completar laboratorio con valores de ejemplo</button>
     <button class="btn ghost" onclick="limpiarTodo()">Vaciar todo</button>
   </div>
@@ -821,6 +839,226 @@ function fmt(v, d=0){
 }
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
+
+/* =========================== PANEL DE AYUDA ============================== */
+const L = s => `<span class="lbl">${s}</span>`;
+const AYUDA = {
+
+RU: {t:'Requerimiento unitario de N · kg N por tonelada de grano', c:
+`<p>Los kilos de N que absorbe <b>toda la planta</b> —grano más rastrojo— por cada tonelada de grano producido. No es lo que se lleva el grano: el grano de maíz saca unos 12 a 14 kg N/tn, el resto queda en caña y hojas y vuelve al sistema en la descomposición del rastrojo.</p>
+${L('Rango')}
+<p>Maíz <b>19 a 25</b>, valor usual 22. Trigo 30, sorgo 25, girasol 40. Baja con híbridos de índice de cosecha alto; sube en ambientes de alta oferta de N, donde el cultivo hace consumo de lujo y acumula N que no se traduce en grano.</p>
+${L('Dónde entra')}
+<p>Define la demanda: <b>rinde objetivo × requerimiento unitario</b>. Mueve el criterio de balance de forma directa, y además fija el rinde alcanzable sin fertilizante (oferta ÷ requerimiento), que es el arranque de la curva de respuesta. Subirlo de 22 a 25 sube la demanda un 14 % y la dosis de balance bastante más, porque el déficit crece sobre una base fija de oferta.</p>`},
+
+coef: {t:'Coeficiente de N disponible · kg N por quintal', c:
+`<p>Es el modelo de respuesta calibrado clásico de la Argentina. Sostiene que el <b>N disponible a la siembra</b> —el N-NO₃ de 0 a 60 cm más el que aporte el fertilizante— tiene que alcanzar cierta cantidad por cada quintal de rinde objetivo.</p>
+${L('Por qué el fertilizante se cuenta uno a uno')}
+<p>Porque la ineficiencia de recuperación <b>ya está adentro del coeficiente</b>: se ajustó sobre ensayos donde efectivamente se aplicó fertilizante. Dividir además por la eficiencia sería contarla dos veces y sobreestimar la dosis.</p>
+${L('Rango')}
+<p>Maíz temprano <b>2,0 a 2,2</b>; maíz tardío o de segunda <b>1,7 a 1,9</b>. Trigo 3,3 a 4,0. En ambientes de menor potencial y más riesgo hídrico se trabaja en el extremo bajo.</p>
+${L('Cómo ajustarlo')}
+<p>Es el parámetro que más conviene calibrar con ensayos propios: si tenés franjas con distintas dosis, el coeficiente sale de la dosis a partir de la cual el rinde deja de responder, dividida por el rinde en quintales.</p>`},
+
+eur: {t:'Eficiencia de recuperación del N fertilizante · %', c:
+`<p>Del nitrógeno que aplicás, <b>qué porcentaje termina dentro de la planta</b> durante el ciclo. Se mide con N marcado (¹⁵N) o, más a mano, por diferencia: N absorbido en la franja fertilizada menos el de la franja sin fertilizar, dividido por los kg de N aplicados.</p>
+${L('Adónde va el resto')}
+<p>No se pierde todo. Una parte queda <b>inmovilizada</b> en la materia orgánica y se libera en campañas siguientes. Lo que sí se pierde se va por <b>volatilización</b> (urea al voleo en superficie sin lluvia), <b>lixiviación</b> de nitratos (lluvias fuertes sobre suelo arenoso) y <b>desnitrificación</b> (suelo saturado).</p>
+${L('Rango')}
+<p><b>40 a 70 %</b>; en maíz argentino lo usual es 50 a 60. Extremo bajo: voleo en superficie sin lluvia inmediata, suelo arenoso, dosis alta, año seco. Extremo alto: incorporado o fraccionado a V6, fuente protegida, cultivo con buen potencial de rinde.</p>
+${L('Dónde entra')}
+<p>Sólo en el <b>criterio de balance</b>, que divide el déficit por esta eficiencia. Es el parámetro más sensible de ese criterio: bajarla de 55 a 45 % sube la dosis un 22 %. No toca el umbral —donde ya está incorporada en el coeficiente— ni el de gramos de N por planta, calibrado sobre resultados a campo. El factor de eficiencia de la fuente la multiplica.</p>`},
+
+base: {t:'Criterio base para el óptimo técnico', c:
+`<p>El tablero calcula <b>cuatro dosis</b> con criterios independientes. Una de ellas se toma como <b>óptimo técnico</b>: la dosis a partir de la cual se asume que el rinde ya no sube, o sea la meseta de la curva de respuesta. El óptimo económico se calcula sobre esa meseta y siempre queda por debajo.</p>
+${L('Qué no hace')}
+<p>No cambia las cuatro dosis que ves en la tabla: ésas se calculan siempre igual. Lo que cambia es <b>cuál de ellas define la meseta</b>, y con eso se mueven el óptimo económico, la curva de respuesta, el rinde esperado y el margen.</p>
+${L('Las opciones')}
+<ul>
+<li><b>Promedio de ambos criterios</b> — promedia balance y umbral. Razonable cuando no tenés motivo para confiar más en uno que en el otro. Es el valor por defecto.</li>
+<li><b>Balance oferta–demanda</b> — el más explícito, y el más sensible al supuesto de mineralización.</li>
+<li><b>Umbral de N disponible</b> — el calibrado clásico. Elegilo si el coeficiente kg N/qq viene de ensayos de tu zona.</li>
+<li><b>Objetivo de g N por planta</b> — el único calibrado sobre resultados de estos campos. Da dosis más bajas porque no contabiliza la mineralización.</li>
+<li><b>El mayor de ambos</b> — la posición conservadora de no quedarse corto.</li>
+</ul>
+${L('Efecto práctico')}
+<p>Cuanto más alta la meseta, más alto sale el óptimo económico y más plana queda la curva alrededor del óptimo, o sea menos castigo por errarle a la dosis.</p>`},
+
+dap: {t:'Densidad aparente · g/cm³', c:
+`<p>La masa de suelo seco por unidad de volumen. Es lo que convierte una concentración del laboratorio (ppm) en kilos por hectárea: <b>kg/ha = ppm × densidad × espesor en cm ÷ 10</b>.</p>
+${L('Rango')}
+<p>Suelos francos <b>1,20 a 1,35</b>; arenosos hasta 1,45; arcillosos bien estructurados 1,10 a 1,25. Aumenta con la profundidad y con la compactación, por eso el estrato de 20 a 60 cm siempre lleva un valor más alto que el superficial.</p>
+${L('Cuánto importa')}
+<p>Bastante: pasar de 1,20 a 1,35 sube el N-NO₃ calculado un 12 %, y eso baja directo la dosis del balance y la del umbral. Si el laboratorio te la informa por lote, cargala por zona en la tabla de abajo; el valor de acá se usa sólo cuando la celda de la zona está vacía.</p>`},
+
+fNMO: {t:'N orgánico como fracción de la materia orgánica', c:
+`<p>Cuántos kilos de N orgánico hay por cada kilo de materia orgánica del suelo. La MO tiene alrededor de <b>58 % de carbono</b>; con una relación C/N de 11 a 12, el N queda en torno al <b>5 %</b> de la MO.</p>
+${L('Cuándo moverlo')}
+<p>Casi nunca. Es una constante razonablemente estable. Si tu laboratorio informa N total del suelo, usá ese dato en vez de estimarlo desde la MO.</p>`},
+
+kmin: {t:'Mineralización en el ciclo · % del N orgánico', c:
+`<p>Qué proporción del N orgánico de los primeros 20 cm se mineraliza —pasa a nitrato disponible— <b>durante el ciclo del cultivo</b>, después de la fecha del muestreo. Lo que se mineralizó antes ya está contado en el N-NO₃ del análisis.</p>
+${L('Rango')}
+<p>Zona templada <b>1,5 a 2 %</b>; Chaco semiárido, más cálido, <b>2 a 3 %</b>. Sobre un suelo con 2 % de MO y densidad 1,25, cada punto porcentual son unos 25 kg N/ha, así que la elección pesa.</p>
+${L('La mejor mejora posible')}
+<p>Si el laboratorio te da <b>Nan</b> (N anaeróbico), reemplazá esta estimación por una calibración local sobre Nan. Es el cambio que más precisión le agrega al criterio de balance.</p>
+${L('Ojo')}
+<p>Es el supuesto que explica casi toda la brecha entre el criterio de balance y el de umbral. Cuando esos dos se separan mucho en una zona, mirá primero acá.</p>`},
+
+fTardio: {t:'Factor de mineralización · maíz tardío', c:
+`<p>Multiplica la tasa de mineralización cuando el lote está marcado como <b>tardío o de segunda</b>. El ciclo transcurre en un período más cálido y largo, así que se mineraliza más N acumulado.</p>
+${L('Rango')}
+<p><b>1,10 a 1,25</b>. Un valor de 1,15 significa 15 % más de mineralización que en un maíz temprano.</p>
+${L('Lo que no captura')}
+<p>Ese mismo período más húmedo y cálido también trae <b>más riesgo de lavado</b> de nitratos. El factor sólo suma el lado positivo; si tu suelo es arenoso y el año viene lluvioso, compensá bajando la eficiencia de recuperación.</p>`},
+
+incMinUmb: {t:'Incluir la mineralización en el criterio de umbral', c:
+`<p>El modelo clásico argentino computa como N disponible <b>únicamente el N-NO₃ de 0 a 60 cm</b> medido a la siembra, más el fertilizante. La mineralización del ciclo no se suma, porque el coeficiente kg N/qq se calibró sobre esa definición.</p>
+${L('Recomendación')}
+<p>Dejalo en <b>No</b>, salvo que estés usando un coeficiente propio calibrado sobre una definición que sí incluya la mineralización. Ponerlo en Sí con un coeficiente estándar baja la dosis del umbral de manera artificial.</p>`},
+
+tipoAno: {t:'Tipo de año esperado', c:
+`<p>Clasifica la campaña por la <b>lluvia acumulada entre siembra y madurez fisiológica</b>: seco menos de 300 mm, normal de 300 a 500, húmedo más de 500. Es la clasificación con la que se calibraron las bandas de gramos de N por planta.</p>
+${L('Qué cambia')}
+<p>Reescribe las cuatro bandas objetivo con los valores calibrados, y con eso se mueven el criterio de g N por planta, el semáforo de la tabla y la franja del gráfico. No toca el balance, el umbral ni el económico.</p>
+${L('Cómo usarlo si no sabés qué año viene')}
+<p>Nunca lo sabés a la siembra, y ése es el punto. Miralo como escenario: calculá con año normal, después con seco, y decidí cuánto riesgo querés tomar. La diferencia entre las dos dosis es, literalmente, lo que estás apostando al clima.</p>`},
+
+dsRef: {t:'Dosis de siembra de referencia · semillas/ha', c:
+`<p>Es sólo un <b>valor de arranque</b>: se copia a las zonas nuevas cuando se crean, para que no queden vacías. A partir de ahí, cada zona tiene su propia dosis de siembra, editable en la tabla de carga.</p>
+${L('Por qué importa que sea por zona')}
+<p>Con siembra variable, la densidad cambia entre ambientes del mismo lote. Dos zonas con los mismos kg N/ha pero 52.000 y 64.000 semillas/ha le entregan a cada planta cantidades muy distintas de N —un 23 % de diferencia—, y eso es justamente lo que el diagnóstico de gramos de N por planta busca capturar.</p>
+${L('Si una zona queda sin dosis de siembra')}
+<p>El tablero no inventa un valor: las columnas de g N por planta quedan en guion y ese criterio no calcula para esa zona. El botón <b>Copiar la dosis de referencia a las zonas vacías</b> las completa de una.</p>`},
+
+banda: {t:'Banda objetivo de gramos de N por planta', c:
+`<p>El rango de gramos de N por planta donde el rinde relativo <b>deja de mejorar</b>. Por debajo de la banda, el N está limitando; por encima, es fertilizante que en ese tipo de año no se paga.</p>
+${L('De dónde salen')}
+<p>De 2.405 registros de maíz de Suri Yaco, campañas 20-21 a 25-26, sin las zonas no fertilizadas. Para separar el efecto del N del efecto del año y del ambiente, el rinde de cada registro se expresó como desvío respecto de la media de su grupo de campaña × clase ambiental × campo. El gráfico "De dónde salen las bandas" muestra esas curvas con sus barras de error.</p>
+${L('Los valores calibrados')}
+<ul><li><b>Seco</b> — 1,30 a 1,70 g N s+f/pl. La ganancia se agota en 1,5.</li>
+<li><b>Normal</b> — 1,50 a 2,00. Máximo entre 1,5 y 1,9; arriba de 2,5 el efecto se vuelve negativo.</li>
+<li><b>Húmedo</b> — 2,20 a 2,90. Sigue subiendo hasta el extremo medido, sin meseta visible.</li></ul>
+${L('La letra chica')}
+<p>Es evidencia observacional de lotes comerciales, no un ensayo con dosis al azar. Los años secos de la serie son 20-21 y 23-24, así que el efecto "seco" y el efecto "esas campañas" no se separan del todo. Tomalo como una regla de decisión bien fundada que conviene seguir midiendo.</p>`},
+
+pgrano: {t:'Precio del grano de maíz · US$/tn', c:
+`<p>El precio <b>neto puesto en zona</b>: el de pizarra menos flete, gastos de comercialización y secada. En el NEA y el Chaco semiárido el flete se lleva una parte grande, así que usar el precio de Rosario sobreestima el valor de cada tonelada extra.</p>
+${L('Dónde entra')}
+<p>Junto con el costo del N define la <b>relación de precios</b>, que es el corazón del criterio económico: cuántos kilos de grano hay que producir de más para pagar un kilo de N. Sólo afecta al óptimo económico y al margen; los criterios agronómicos no se mueven.</p>`},
+
+RP: {t:'Relación de precios · kg de grano por kg de N', c:
+`<p>Cuántos kilos de maíz tenés que producir de más para pagar un kilo de nitrógeno. Se calcula como <b>costo del kg de N ÷ precio del kg de grano</b>.</p>
+${L('Cómo leerla')}
+<p>Es el umbral de respuesta marginal. El último kilo de N que conviene aplicar es el que produce exactamente esa cantidad de grano; de ahí en adelante, cada kilo cuesta más de lo que devuelve. Valores típicos van de 5 a 12: cuanto más alta, más se aleja el óptimo económico del técnico.</p>
+${L('Efecto')}
+<p>Con maíz a 120 US$/tn en lugar de 160, la relación pasa de 8,7 a 11,6 y el óptimo económico baja unos 7 kg N/ha en una zona de respuesta media. Es la palanca para ver qué tan sensible es la recomendación al mercado.</p>`},
+
+fuenteN: {t:'Fuente nitrogenada', c:
+`<p>Cada fuente entra al cálculo con tres cosas: su <b>graduación</b> (% de N, que define los kilos de producto), su <b>aporte de azufre</b> (que se descuenta del requerimiento de S) y su <b>factor de eficiencia</b>.</p>
+${L('Las opciones')}
+<ul><li><b>Urea granulada</b> 46-0-0 — la referencia.</li>
+<li><b>Urea protegida NBPT</b> 46-0-0 — inhibidor de ureasa, menos volatilización.</li>
+<li><b>Solmix 80-20</b> 28-0-0-5,2S — solución de urea, nitrato de amonio y tiosulfato de amonio.</li>
+<li><b>Nitrodoble</b> 27-0-0 con 6 % CaO y 4 % MgO — mitad nítrico, mitad amoniacal.</li>
+<li><b>UAN 32</b> 32-0-0.</li>
+<li><b>Sulfato de amonio</b> 21-0-0-24S — baja graduación, rara vez fuente principal de N.</li></ul>
+${L('Ojo con el precio')}
+<p>Comparar precios por tonelada de producto engaña: lo que importa es el <b>costo por kg de N</b>, que el tablero calcula solo, y el crédito de azufre. Cambiar la fuente reescribe el precio y el factor con los valores por defecto; ajustalos a tu cotización.</p>`},
+
+efFuente: {t:'Factor de eficiencia de la fuente', c:
+`<p>Multiplica la eficiencia de recuperación base. Recoge sobre todo las <b>pérdidas por volatilización</b>, que es donde las fuentes se diferencian de verdad en aplicaciones de superficie.</p>
+${L('Valores por defecto')}
+<p>Urea granulada 1,00 como referencia · urea protegida 1,10 · Nitrodoble 1,08 · UAN y Solmix 0,95 · sulfato de amonio 1,00.</p>
+${L('Cuándo bajarlos todos a 1,00')}
+<p>Cuando el fertilizante va <b>incorporado</b> o hay lluvia asegurada en los días siguientes. Ahí las diferencias entre fuentes se achican mucho y mantener los factores exagera la ventaja de las protegidas.</p>
+${L('Dónde entra')}
+<p>Sólo en el criterio de balance, junto con la eficiencia base. No toca el umbral ni el de g N por planta.</p>`},
+
+sFuente: {t:'Azufre que aporta la fuente nitrogenada', c:
+`<p>El porcentaje de S de la fuente elegida. El tablero lo convierte en kg S/ha sobre los kilos de producto de cada zona y lo <b>descuenta del requerimiento de azufre</b>: sólo se cobra el faltante.</p>
+${L('Ejemplo')}
+<p>Con Solmix 80-20, una dosis de 100 kg N/ha son 357 kg de producto y <b>18,6 kg de S/ha</b>, que suelen cubrir el requerimiento completo del maíz. Ahí la columna "S a agregar" marca cubierto y el costo de azufre se va a cero, lo que compensa buena parte del mayor costo por kg de N.</p>`},
+
+pS: {t:'Costo del azufre · US$/kg S', c:
+`<p>El costo del kilo de S de la fuente azufrada que uses para tapar el faltante. Sulfato de amonio a 480 US$/tn con 24 % de S da <b>2,00 US$/kg S</b>; yeso agrícola con 18 % de S sale bastante menos, cerca de 1,00.</p>
+${L('Para qué está')}
+<p>Para que la comparación entre fuentes nitrogenadas sea justa. Si usás urea vas a necesitar un producto azufrado aparte y eso cuesta plata; si usás Solmix, no. Sin cargar ese costo, las fuentes con azufre parecen más caras de lo que son.</p>`},
+
+descArr: {t:'Descontar el N del arrancador', c:
+`<p>El MAP (11-52-0) y el DAP (18-46-0) aportan nitrógeno además de fósforo. Si activás el descuento, ese N se resta de la dosis nitrogenada, que es lo correcto: ya está en el lote.</p>
+${L('Cuánto es')}
+<p>Nada despreciable. Una dosis de 56 kg de P₂O₅/ha con MAP son 108 kg de producto y <b>12 kg de N/ha</b>. Con superfosfato triple, que no tiene N, el descuento es cero.</p>`},
+
+umbP: {t:'Umbral crítico de P Bray-1 · ppm', c:
+`<p>El nivel de fósforo extractable por debajo del cual la respuesta a la fertilización fosforada es probable. Se mide en los primeros 20 cm.</p>
+${L('Rango')}
+<p>Maíz <b>13 a 18 ppm</b>; trigo 14; girasol 12. El umbral sube con el potencial de rinde y con la capacidad de fijación del suelo.</p>
+${L('Qué hace en el tablero')}
+<p>Por encima del umbral, la recomendación es sólo de <b>reposición</b>. Por debajo, se suma una <b>corrección parcial</b> hacia el umbral, repartida en varias campañas.</p>`},
+
+extP: {t:'Extracción de P en grano · kg P₂O₅/tn', c:
+`<p>El fósforo que se va del lote con cada tonelada de grano cosechado. A diferencia del N, en P casi toda la extracción está en el grano, así que la reposición es un criterio bastante directo.</p>
+${L('Rango')}
+<p>Maíz <b>8,0</b>; trigo 10; sorgo 8,5; girasol 14. Multiplicado por el rinde objetivo da lo que hay que devolver para no minar el suelo.</p>`},
+
+fRepP: {t:'Factor de reposición de P', c:
+`<p>Qué proporción de la extracción se repone cuando el suelo está <b>por encima</b> del umbral crítico. Con 1,00 el balance de P queda neutro; con 0,80 se acepta una caída lenta del nivel, apostando a la reserva del suelo.</p>
+${L('Cómo elegirlo')}
+<p>Depende de la tenencia. En campo propio conviene 1,00 o más para construir fertilidad; en alquiler corto es habitual bajarlo. Es una decisión económica, no agronómica.</p>`},
+
+kBuild: {t:'Corrección de P por ppm faltante · kg P₂O₅/ppm', c:
+`<p>Cuánto P₂O₅ hay que aplicar para subir <b>1 ppm</b> de P Bray en los primeros 20 cm.</p>
+${L('Rango')}
+<p><b>4 a 7 kg</b> por ppm. Los suelos arcillosos y con alta capacidad de fijación están en el extremo alto: buena parte del P aplicado queda retenido y no aparece en el análisis del año siguiente.</p>`},
+
+fCorrP: {t:'Fracción de la corrección a aplicar este año', c:
+`<p>Llevar un suelo desde 10 hasta 15 ppm de P Bray de un saque es caro y poco eficiente. Este factor <b>reparte la corrección</b> en varias campañas: 0,35 significa que este año se aplica un tercio del camino, más la reposición del cultivo.</p>
+${L('Cómo pensarlo')}
+<p>Con 0,35 el suelo se acerca al umbral en unas tres campañas. Subilo si el nivel es muy bajo y el cultivo es de alto valor; bajalo si el objetivo es sostener y no construir.</p>`},
+
+umbS: {t:'Umbral crítico de S-SO₄ · ppm', c:
+`<p>El nivel de sulfatos en 0 a 20 cm por debajo del cual la respuesta a azufre es probable. Referencia: <b>8 a 10 ppm</b>.</p>
+${L('Dónde esperar respuesta')}
+<p>Suelos de baja materia orgánica, con muchos años de agricultura continua y alta producción de grano. El azufre viene sobre todo de la mineralización de la MO, así que los lotes más degradados son los que más responden.</p>
+${L('Cuidado con el dato')}
+<p>El sulfato es móvil y lava con las lluvias, así que un análisis de 0 a 20 cm tomado después de un período húmedo puede subestimar la disponibilidad real del perfil.</p>`},
+
+dosS: {t:'Dosis de S por tonelada de rinde objetivo', c:
+`<p>Cuántos kilos de azufre sugerir por tonelada de rinde objetivo, cuando el análisis está por debajo del umbral. Maíz <b>1,5</b>; trigo 2,0; girasol 2,5. El tablero le pone un piso de 8 kg S/ha.</p>
+${L('Alcance')}
+<p>Es orientativo. El azufre no está modelado con el nivel de detalle del N: no hay balance de oferta y demanda, sólo una regla de suficiencia. Contrastalo con ensayos locales antes de generalizarlo.</p>`},
+
+antecesor: {t:'Aporte del antecesor · kg N/ha', c:
+`<p>El crédito o la deuda de nitrógeno que deja el cultivo anterior. Las <b>leguminosas</b> dejan residuos de baja relación C/N que se descomponen rápido y liberan N (crédito positivo). Las <b>gramíneas</b> dejan rastrojo de alta relación C/N: los microorganismos que lo descomponen toman N del suelo para hacerlo, y lo inmovilizan temporalmente (valor negativo).</p>
+${L('Los extremos')}
+<p>Pastura consociada con alfalfa <b>+45</b>, vicia +40, soja +25 · maíz −15, trigo y sorgo −20, <b>centeno como cultivo de servicio −25</b>. Los cultivos de servicio gramíneos terminados tarde son los que más inmovilizan, y además consumen agua.</p>
+${L('En este tablero')}
+<p>El antecesor se deriva solo de la rotación del catálogo: es el cultivo de invierno de la campaña, o el de verano de la campaña anterior si el invierno fue barbecho químico. El chip al lado del nombre del lote te dice de dónde salió.</p>`}
+};
+
+function ayuda(k, ev){
+  ev.stopPropagation();
+  const a = AYUDA[k]; if (!a) return;
+  const el = $('pop');
+  el.innerHTML = `<button class="pop-x" onclick="cerrarAyuda()" aria-label="Cerrar">×</button><h4>${a.t}</h4>${a.c}`;
+  el.hidden = false;
+  const r = ev.currentTarget.getBoundingClientRect();
+  const w = Math.min(440, window.innerWidth - 28);
+  el.style.width = w + 'px';
+  let left = r.left + window.scrollX - 12;
+  if (left + w > window.scrollX + window.innerWidth - 14) left = window.scrollX + window.innerWidth - w - 14;
+  el.style.left = Math.max(14, left) + 'px';
+  let top = r.bottom + window.scrollY + 9;
+  /* si no entra abajo, se abre hacia arriba */
+  if (r.bottom + el.offsetHeight + 20 > window.innerHeight && r.top > el.offsetHeight + 20)
+    top = r.top + window.scrollY - el.offsetHeight - 9;
+  el.style.top = top + 'px';
+}
+function cerrarAyuda(){ const el = $('pop'); if (el) el.hidden = true; }
+document.addEventListener('click', e => { if (!e.target.closest('#pop') && !e.target.closest('.info')) cerrarAyuda(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarAyuda(); });
+
 /* ------------------------- Lectura de parámetros ------------------------ */
 function leerParams(){
   P.RU        = num($('p_RU').value);
@@ -922,11 +1160,11 @@ function calcZona(z, lote){
   r.dUmb = Math.max(0, r.NdispReq - NdispSuelo - credArr);
 
   /* --- Óptimo técnico --- */
-  /* --- Criterio 3: objetivo de gramos de N por planta --- */
-  r.ds = num(z.ds) || P.dsDef;
-  r.dGnp = r.ds > 0
-    ? Math.max(0, (P.objSF * r.ds / 1000) - r.Ns - credArr)
-    : 0;
+  /* --- Criterio 3: objetivo de gramos de N por planta ---
+     La dosis de siembra es un dato de la zona: si falta, este criterio no calcula. */
+  r.ds = num(z.ds);
+  r.sinDs = !(r.ds > 0);
+  r.dGnp = r.sinDs ? 0 : Math.max(0, (P.objSF * r.ds / 1000) - r.Ns - credArr);
 
   /* --- Óptimo técnico --- */
   r.Ntec = P.base === 'bal'  ? r.dBal
@@ -962,10 +1200,10 @@ function calcZona(z, lote){
   r.sFalta   = Math.max(0, r.dosisS - r.sFuente);             // S que hay que agregar aparte
   r.costoS   = r.sFalta * P.pS;
   /* --- N por planta resultante de la dosis decidida --- */
-  r.gNf  = r.ds > 0 ? (r.dosis + credArr) * 1000 / r.ds : 0;
-  r.gNsf = r.ds > 0 ? (r.Ns + r.dosis + credArr) * 1000 / r.ds : 0;
-  r.estSF = r.gNsf < P.banda[0]  ? 'bajo' : r.gNsf > P.banda[1]  ? 'alto' : 'ok';
-  r.estF  = r.gNf  < P.bandaF[0] ? 'bajo' : r.gNf  > P.bandaF[1] ? 'alto' : 'ok';
+  r.gNf  = r.sinDs ? null : (r.dosis + credArr) * 1000 / r.ds;
+  r.gNsf = r.sinDs ? null : (r.Ns + r.dosis + credArr) * 1000 / r.ds;
+  r.estSF = r.sinDs ? 'sd' : r.gNsf < P.banda[0]  ? 'bajo' : r.gNsf > P.banda[1]  ? 'alto' : 'ok';
+  r.estF  = r.sinDs ? 'sd' : r.gNf  < P.bandaF[0] ? 'bajo' : r.gNf  > P.bandaF[1] ? 'alto' : 'ok';
 
   r.NdispFin = r.Ns + (P.incMinUmb ? r.Nmin : 0) + r.dosis + credArr;
   r.NporQq   = r.Y > 0 ? r.NdispFin / (r.Y * 10) : 0;
@@ -996,7 +1234,7 @@ function calcTodo(){
       n020:  pond(l, 'n020', ha), n2060: pond(l, 'n2060', ha),
       dap1:  pond(l, 'dap1', ha), dap2:  pond(l, 'dap2', ha),
       mo:    pond(l, 'mo',   ha), p:     pond(l, 'p',    ha), s: pond(l, 's', ha),
-      ds:    pondDef(l, 'ds', ha, P.dsDef),
+      ds:    pondDs(l),
       dosis: ''
     };
     const rProm = calcZona(zProm, l);
@@ -1036,10 +1274,11 @@ function pond(l, campo, ha){
   if (ha <= 0) return 0;
   return l.zonas.reduce((a, z) => a + num(z[campo]) * num(z.ha), 0) / ha;
 }
-/* Igual que pond, pero las celdas vacías toman el valor por defecto en vez de cero */
-function pondDef(l, campo, ha, def){
-  if (ha <= 0) return def;
-  return l.zonas.reduce((a, z) => a + (num(z[campo]) || def) * num(z.ha), 0) / ha;
+/* Dosis de siembra media del lote, ponderada sólo sobre las zonas que tienen el dato */
+function pondDs(l){
+  let sup = 0, acc = 0;
+  l.zonas.forEach(z => { const d = num(z.ds); if (d > 0){ sup += num(z.ha); acc += d * num(z.ha); } });
+  return sup > 0 ? acc / sup : 0;
 }
 
 /* ============================ RENDER: LOTES ============================== */
@@ -1126,8 +1365,10 @@ function resetDosis(lid, zid){
   const z = l.zonas.find(x => x.id === zid); if (!z) return;
   z.dosis = ''; render();
 }
+/* Valor de arranque que se copia a las zonas nuevas; después cada zona lleva el suyo */
+function dsRef(){ const v = num($('p_dsDef').value); return v > 0 ? String(Math.round(v)) : ''; }
 function nuevaZona(n){
-  return {id: uid++, nombre:'Zona ' + n, ha:'', y:'', ds:'', n020:'', n2060:'', mo:'', dap1:'', dap2:'', p:'', s:'', dosis:''};
+  return {id: uid++, nombre:'Zona ' + n, ha:'', y:'', ds: dsRef(), n020:'', n2060:'', mo:'', dap1:'', dap2:'', p:'', s:'', dosis:''};
 }
 function addLote(){
   LOTES.push({id: uid++, nombre:'Lote ' + (LOTES.length + 1), antecesor:'soja', fecha:'tardio',
@@ -1141,10 +1382,11 @@ function limpiarTodo(){ LOTES = []; render(); }
 </script>
 <script>
 /* ========================= RENDER: RESULTADOS ============================ */
-const PILL = {bajo:'media', ok:'baja', alto:'gris'};
+const PILL = {bajo:'media', ok:'baja', alto:'gris', sd:'media'};
 const TIT  = {bajo:'Por debajo de la banda objetivo — el N limita',
               ok:'Dentro de la banda objetivo',
-              alto:'Por encima de la banda — sin respuesta esperada'};
+              alto:'Por encima de la banda — sin respuesta esperada',
+              sd:'Falta la dosis de siembra de esta zona'};
 
 function renderResultados(R){
   const t = $('tablaRes');
@@ -1174,15 +1416,15 @@ function renderResultados(R){
         <td><span class="pill ${z.nivel}">${z.nivel}</span></td>
         <td style="color:#00897B;font-weight:700">${fmt(z.dUmb)}</td>
         <td style="color:#1565C0;font-weight:700">${fmt(z.dBal)}</td>
-        <td style="color:#B0288C;font-weight:700">${fmt(z.dGnp)}</td>
+        <td style="color:#B0288C;font-weight:700">${z.sinDs ? '—' : fmt(z.dGnp)}</td>
         <td style="color:#96690c;font-weight:700">${fmt(z.dEco)}</td>
         <td><input class="adj" type="number" step="5" value="${Math.round(z.dosis)}"
              onchange="setDosis(${g.lote.id},${z.id},this.value)"
              title="${z.auto ? 'Valor automático = óptimo económico. Editá para fijar tu decisión.' : 'Dosis fijada manualmente. Borrá el valor para volver al automático.'}"
              style="${z.auto ? '' : 'background:#fff;border-color:var(--accent)'}"></td>
-        <td>${fmt(z.ds)}</td>
-        <td><span class="pill ${PILL[z.estF]}" title="${TIT[z.estF]} · banda ${fmt(P.bandaF[0],2)}–${fmt(P.bandaF[1],2)}">${fmt(z.gNf,2)}</span></td>
-        <td><span class="pill ${PILL[z.estSF]}" title="${TIT[z.estSF]} · banda ${fmt(P.banda[0],2)}–${fmt(P.banda[1],2)}">${fmt(z.gNsf,2)}</span></td>
+        <td>${z.sinDs ? '<span class="pill media" title="Cargá la dosis de siembra de esta zona">sin dato</span>' : fmt(z.ds)}</td>
+        <td>${z.sinDs ? '—' : `<span class="pill ${PILL[z.estF]}" title="${TIT[z.estF]} · banda ${fmt(P.bandaF[0],2)}–${fmt(P.bandaF[1],2)}">${fmt(z.gNf,2)}</span>`}</td>
+        <td>${z.sinDs ? '—' : `<span class="pill ${PILL[z.estSF]}" title="${TIT[z.estSF]} · banda ${fmt(P.banda[0],2)}–${fmt(P.banda[1],2)}">${fmt(z.gNsf,2)}</span>`}</td>
         <td>${fmt(z.kgProd)}</td><td>${fmt(z.rindeEsp,2)}</td>
         <td>${fmt(z.costoN)}</td>
         <td class="strong" style="color:${z.margenN < 0 ? 'var(--rojo)' : 'var(--green)'}">${fmt(z.margenN)}</td>
@@ -1219,8 +1461,9 @@ function renderResultados(R){
   const dU     = R.reduce((a,g) => a + g.margenUnif, 0);
   const gana   = margen - dU;
   const zonas  = R.flatMap(g => g.zonas);
-  const nZonas = zonas.length;
-  const nOk    = zonas.filter(z => z.estSF === 'ok').length;
+  const zConDs = zonas.filter(z => !z.sinDs);
+  const nZonas = zConDs.length;
+  const nOk    = zConDs.filter(z => z.estSF === 'ok').length;
 
   $('kpisTop').innerHTML = [
     ['accent', fmt(ha,0), 'ha', 'Superficie total'],
@@ -1229,7 +1472,8 @@ function renderResultados(R){
     ['blue',   fmt(costoN + costoP + costoS), 'US$', 'Costo total N + P + S'],
     ['',       fmt(ha > 0 ? (costoN + costoP + costoS) / ha : 0), 'US$/ha', 'Costo por hectárea'],
     ['accent', fmt(prod, 0), 'tn', 'Producción esperada'],
-    [nOk === nZonas ? 'accent' : 'alert', nOk + '/' + nZonas, '', 'Zonas dentro de la banda de g N/pl'],
+    [nZonas === 0 ? '' : nOk === nZonas ? 'accent' : 'alert',
+     nZonas === 0 ? '—' : nOk + '/' + nZonas, '', 'Zonas dentro de la banda de g N/pl'],
     [margen < 0 ? 'alert' : 'accent', fmt(margen), 'US$', 'Margen del N sobre el conjunto'],
     [gana < 0 ? 'alert' : 'accent', (gana >= 0 ? '+' : '') + fmt(gana), 'US$', 'Ganancia vs. dosis uniforme']
   ].map(k => `<div class="kpi ${k[0]}"><div class="n">${k[1]}<small>${k[2]}</small></div><div class="l">${k[3]}</div></div>`).join('');
@@ -1382,6 +1626,12 @@ function chartNpl(R){
   R.forEach(g => g.zonas.forEach(z => zonas.push({lote:g.lote.nombre, ...z})));
   if (!zonas.length){ $('chNpl').innerHTML = ''; return; }
 
+  const conDs = zonas.filter(z => !z.sinDs);
+  if (!conDs.length){
+    $('chNpl').innerHTML = '<p class="help" style="padding:26px 4px">Cargá la dosis de siembra de cada zona '
+      + 'para ver los gramos de N por planta.</p>'; return;
+  }
+  zonas.length = 0; conDs.forEach(z => zonas.push(z));
   const gw = Math.max(52, Math.min(100, 560 / zonas.length));
   const W = Math.max(450, 72 + zonas.length * gw + 18), H = 320;
   const x0 = 52, y0 = 250, y1 = 24;
@@ -1574,6 +1824,11 @@ function calcRender(soloResultados){
 /* Valores de laboratorio de ejemplo — sólo para demostrar el tablero.
    Rango plausible para el Chaco semiárido; se escalan con el rinde objetivo de la zona
    para que el ambiente más productivo también tenga mejor suelo. */
+function copiarDsRef(){
+  const v = dsRef(); if (!v) return;
+  LOTES.forEach(l => l.zonas.forEach(z => { if (!(num(z.ds) > 0)) z.ds = v; }));
+  render();
+}
 function labEjemplo(){
   LOTES.forEach(l => {
     const ys = l.zonas.map(z => num(z.y)).filter(v => v > 0);
@@ -1640,7 +1895,7 @@ function syAgregar(){
       const f = nz === 1 ? 1 : 1 - 0.15 + (0.30 * i) / (nz - 1);
       const haZ = i === nz - 1 ? x.ha - Math.round(x.ha / nz) * (nz - 1) : Math.round(x.ha / nz);
       zonas.push({id: uid++, nombre: nz === 1 ? 'Lote completo' : 'Ambiente ' + (i + 1),
-        ha: haZ, y: Math.round(Yref * f * 10) / 10, ds:'',
+        ha: haZ, y: Math.round(Yref * f * 10) / 10, ds: dsRef(),
         n020:'', n2060:'', mo:'', dap1:'', dap2:'', p:'', s:'', dosis:''});
     }
     LOTES.push({id: uid++, nombre: l.campo + ' — ' + l.lote, antecesor: a.key, fecha:'tardio',
