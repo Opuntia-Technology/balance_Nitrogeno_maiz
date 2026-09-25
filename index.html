@@ -105,6 +105,10 @@ details.panel>summary .tag{margin-left:auto;font-size:11.5px;font-weight:650;col
 .pop-x{position:absolute;top:8px;right:10px;border:none;background:transparent;font-size:18px;line-height:1;
   color:var(--muted);cursor:pointer;padding:2px 5px;border-radius:6px}
 .pop-x:hover{color:var(--rojo);background:#fbeceb}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(14px);z-index:300;
+  background:var(--green);color:#fff;font-size:13.5px;font-weight:600;padding:11px 20px;border-radius:999px;
+  box-shadow:0 8px 28px rgba(35,20,50,.28);opacity:0;pointer-events:none;transition:.22s;max-width:min(560px,92vw);text-align:center}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 
 /* ---------- LOTES ---------- */
 .lote{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden}
@@ -181,6 +185,12 @@ svg.chart text{font-family:inherit}
   font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#3d1470}
 .notas ul{margin:6px 0;padding-left:19px}
 .notas li{margin:3px 0}
+.explic{margin-top:14px;padding:13px 15px;background:var(--soft);border:1px solid var(--line);
+  border-radius:12px;font-size:12.5px;line-height:1.5;color:#33413a}
+.explic p{margin:6px 0}
+.explic p:first-child{margin-top:0}
+.explic p:last-child{margin-bottom:0}
+.explic b{color:var(--green2)}
 .foot{padding:24px 0 40px;text-align:center;font-size:12px;color:var(--muted)}
 .warn{background:#fdf6e6;border:1px solid #f0e0b8;border-radius:12px;padding:11px 14px;font-size:12.5px;color:#7a5c10;margin-top:14px}
 
@@ -250,9 +260,9 @@ svg.chart text{font-family:inherit}
       <div class="fld"><label>Criterio base para el óptimo técnico
         <span class="info" onclick="ayuda('base',event)" title="Ver explicación">?</span></label>
         <select id="p_base">
-          <option value="prom" selected>Promedio de ambos criterios</option>
           <option value="bal">Balance oferta–demanda</option>
           <option value="umb">Umbral de N disponible</option>
+          <option value="prom" selected>Promedio de ambos criterios</option>
           <option value="max">El mayor de ambos</option>
           <option value="gnp">Objetivo de g N por planta</option>
         </select></div>
@@ -260,6 +270,19 @@ svg.chart text{font-family:inherit}
 
     <div class="subhead">Oferta del suelo</div>
     <div class="pgrid">
+      <div class="fld"><label>Unidad del N-NO₃ del laboratorio
+        <span class="info" onclick="ayuda('unidadN',event)" title="Ver explicación">?</span></label>
+        <select id="p_unidadN">
+          <option value="kgha" selected>kg/ha por estrato — se suman directo</option>
+          <option value="ppm">ppm — se convierte con la densidad aparente</option>
+        </select></div>
+      <div class="fld"><label>Reparto del N-NO₃ entre estratos <span class="u">% en 0–20</span>
+        <span class="info" onclick="ayuda('prorrateo',event)" title="Ver explicación">?</span></label>
+        <input type="number" step="1" id="p_prorr" value="60"></div>
+      <div class="fld"><label>Estimar el estrato 20–60 cuando falta
+        <span class="info" onclick="ayuda('prorrateo',event)" title="Ver explicación">?</span></label>
+        <select id="p_estim2060"><option value="1" selected>Sí — se marca la zona</option>
+          <option value="0">No — se toma sólo lo medido</option></select></div>
       <div class="fld"><label>Densidad aparente 0–20 cm <span class="u">g/cm³</span> <span class="info" onclick="ayuda('dap',event)" title="Ver explicación">?</span></label>
         <input type="number" step="0.01" id="p_dap1" value="1.25"></div>
       <div class="fld"><label>Densidad aparente 20–60 cm <span class="u">g/cm³</span> <span class="info" onclick="ayuda('dap',event)" title="Ver explicación">?</span></label>
@@ -337,15 +360,14 @@ svg.chart text{font-family:inherit}
         <input type="number" step="0.05" id="p_pS" value="2.00"></div>
       <div class="fld"><label>Fertilizante arrancador fosforado</label>
         <select id="p_fuenteP">
+          <option value="ninguno">Ninguno — sin arrancador</option>
           <option value="map" selected>MAP (11-52-0)</option>
           <option value="sfa">Superfosfato triple (0-46-0)</option>
           <option value="dap">DAP (18-46-0)</option>
         </select></div>
       <div class="fld"><label>Precio del arrancador <span class="u">US$ / tn puesta en lote</span></label>
         <input type="number" step="5" id="p_pfertP" value="1080"></div>
-      <div class="fld"><label>Descontar el N del arrancador de la dosis
-        <span class="info" onclick="ayuda('descArr',event)" title="Ver explicación">?</span></label>
-        <select id="p_descArr"><option value="1" selected>Sí</option><option value="0">No</option></select></div>
+
     </div>
 
     <div class="subhead">Fósforo y azufre</div>
@@ -380,21 +402,21 @@ svg.chart text{font-family:inherit}
   <div class="card" style="margin-bottom:16px">
     <h3>Catálogo de lotes de Suri Yaco</h3>
     <p class="sub">Rotación real por lote. El antecesor se deriva de la secuencia: cultivo de invierno de la campaña, o cultivo de verano anterior si el invierno fue barbecho químico.</p>
-    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding:9px 12px;
-                background:var(--soft);border:1px solid var(--line);border-radius:11px;font-size:12.5px">
-      <span id="syEstado"></span>
-      <span style="flex:1"></span>
-      <button class="btn sm" onclick="syActualizar(false)">Actualizar desde la planilla</button>
-      <button class="btn ghost sm" onclick="document.getElementById('syOrigen').open=!document.getElementById('syOrigen').open">Origen de datos</button>
-    </div>
+    <div id="fuentesBox" style="margin:0 0 12px"></div>
     <details id="syOrigen" style="margin:-4px 0 12px">
       <summary style="cursor:pointer;font-size:12px;font-weight:700;color:var(--muted);list-style:none"></summary>
       <div class="pgrid" style="margin-top:2px">
-        <div class="fld" style="grid-column:span 2"><label>Planilla de Google · URL o ID</label>
-          <input type="text" id="syId" value="1-RsBaDYylj0vnJin_ceKY6f2CJHUBl6yF-8K2B5zXVE"></div>
-        <div class="fld"><label>Hoja</label><input type="text" id="syHoja" value="Rotación"></div>
+        <div class="fld" style="grid-column:span 2"><label>Rotación y lotes · URL o ID</label>
+          <input type="text" id="src_rot" value="1-RsBaDYylj0vnJin_ceKY6f2CJHUBl6yF-8K2B5zXVE"></div>
+        <div class="fld"><label>Hoja</label><input type="text" id="hoja_rot" value="Rotación"></div>
+        <div class="fld" style="grid-column:span 2"><label>Zonas de manejo · URL o ID</label>
+          <input type="text" id="src_amb" value="1cEE59U9qzCfNMiz8UKDzlqDDrRVenQ3FOUetV4Zqh44"></div>
+        <div class="fld"><label>Hoja</label><input type="text" id="hoja_amb" value="Ambientes"></div>
+        <div class="fld" style="grid-column:span 2"><label>Análisis de laboratorio · URL o ID</label>
+          <input type="text" id="src_lab" value="1MPuTAJRNw-OP9A3qr2TKTW2ig-sDWk-X1kyraB3KSPA"></div>
+        <div class="fld"><label>Hoja</label><input type="text" id="hoja_lab" value="Hoja1"></div>
       </div>
-      <p class="help">La planilla tiene que estar compartida como <b>cualquiera con el enlace puede ver</b>. Se leen las columnas CAMPO, LOTE, SUP., CAMPAÑA, OT&nbsp;-&nbsp;INV. y PRIM-VER; el orden no importa. Cambiando estos dos campos el mismo tablero sirve para otro cliente.</p>
+      <p class="help">Las tres planillas tienen que estar compartidas como <b>cualquiera con el enlace puede ver</b>. Las columnas se buscan por nombre, así que el orden no importa y las que sobran se ignoran. Cambiando estos campos el mismo tablero sirve para otro cliente.</p>
     </details>
     <div class="selrow">
       <label>Campaña</label><select id="syCamp" onchange="syLista()"></select>
@@ -420,7 +442,11 @@ svg.chart text{font-family:inherit}
 
   <div id="lotesCont"></div>
   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
-    <button class="btn primary" onclick="addLote()">+ Agregar lote en blanco</button>
+    <button class="btn primary" onclick="exportarExcel()" title="Descarga un Excel con una fila por zona: las columnas de entrada son editables y las calculadas van de referencia.">Descargar Excel de los lotes</button>
+    <label class="btn" style="cursor:pointer" title="Subí el mismo Excel editado. Se actualizan los lotes que ya están y se crean los que falten.">Subir Excel y actualizar
+      <input type="file" accept=".xlsx,.csv" style="display:none" onchange="importarExcel(this)"></label>
+    <button class="btn" onclick="addLote()">+ Agregar lote en blanco</button>
+    <button class="btn" onclick="traerLabTodos()" title="Aplica Traer laboratorio a todos los lotes cargados.">Traer laboratorio a todos los lotes</button>
     <button class="btn" onclick="copiarDsRef()" title="Escribe la dosis de siembra de referencia en las zonas que la tengan vacía. Después ajustá cada una.">Copiar la dosis de siembra de referencia a las zonas vacías</button>
     <button class="btn" onclick="labEjemplo()" title="Rellena sólo las celdas vacías con valores plausibles de la zona, para ver el tablero funcionando. Reemplazalos por los resultados reales del laboratorio.">Completar laboratorio con valores de ejemplo</button>
     <button class="btn ghost" onclick="limpiarTodo()">Vaciar todo</button>
@@ -489,6 +515,11 @@ svg.chart text{font-family:inherit}
         <span><i style="background:#1565C0"></i>Año normal</span>
         <span><i style="background:#00897B"></i>Año húmedo</span>
       </div>
+      <div class="explic">
+        <p><b>Qué mide el eje vertical.</b> No es el rinde, es la <b>diferencia contra el promedio de su propio grupo</b>. Cada registro histórico se comparó con las demás zonas de su misma campaña, su misma clase ambiental y su mismo campo. Así el efecto del año y el del ambiente quedan afuera y lo que sobra es el efecto del nitrógeno. Un punto en +0,4 significa que esas zonas rindieron 0,4 tn/ha más que sus pares.</p>
+        <p><b>Cómo se lee.</b> De izquierda a derecha aumenta el N que recibe cada planta. Mientras la curva sube, agregar N todavía paga. Donde se aplana, se llegó al techo. La rayita vertical de cada punto es el error estándar: si es larga, ese punto tiene pocos datos y conviene no apoyarse en él.</p>
+        <p><b>Lo que cuenta la comparación.</b> Las tres curvas son el mismo cálculo separado por tipo de año, y muestran que <b>el techo se corre con el agua</b>: en año seco se agota cerca de 1,5 g/pl, en año normal alrededor de 1,9 y en año húmedo sigue subiendo hasta el extremo medido. La franja rosa es la banda del tipo de año que tenés elegido arriba; la curva resaltada es la de ese año.</p>
+      </div>
     </div>
   </div>
 
@@ -512,6 +543,12 @@ svg.chart text{font-family:inherit}
           <span><i style="background:#1565C0"></i>Margen del N (ingreso extra − costo del N)</span>
         </div>
       </div>
+    </div>
+    <div class="explic">
+      <p><b>Qué es esta curva.</b> No es una curva medida a campo: es la <b>forma que el modelo supone</b> para esta zona en particular. Arranca en el rinde que se lograría sin fertilizar —sólo con el N que ya tiene el suelo— y sube con rendimientos decrecientes hasta la meseta, donde el tablero asume que agregar más N ya no mueve el rinde.</p>
+      <p><b>Las dos marcas.</b> El <b style="color:#1565C0">óptimo técnico</b> es esa meseta, y sale del criterio que elegiste arriba en los supuestos. El <b style="color:#96690c">óptimo económico</b> siempre cae antes: es la dosis donde el último kilo de N produce exactamente los kilos de grano que cuesta. Todo lo que hay entre las dos marcas es grano que se puede producir, pero que no se paga a los precios actuales.</p>
+      <p><b>El gráfico de la derecha</b> es el margen del N: el ingreso por el rinde extra menos el costo del fertilizante. Su punto más alto coincide con el óptimo económico — ésa es la comprobación de que las dos cuentas cierran. Si la curva del margen es bien plana alrededor del máximo, errarle a la dosis cuesta poco; si es puntiaguda, conviene afinar.</p>
+      <p><b>De dónde sale la altura.</b> La respuesta máxima es la brecha entre el rinde objetivo y el rinde alcanzable con la oferta del suelo. Por eso una zona con mucho nitrato y mucha mineralización tiene una curva casi plana: el suelo ya hace casi todo el trabajo.</p>
     </div>
     <div id="zonaDetalle"></div>
   </div>
@@ -540,7 +577,8 @@ svg.chart text{font-family:inherit}
   <div class="card notas">
 
     <h4>1 · Oferta de N del suelo</h4>
-    <p><code>N-NO₃ (kg/ha) = ppm × dap × espesor(cm) / 10</code> — sumando 0–20 y 20–60 cm.</p>
+    <p>Si el laboratorio informa <b>kg/ha por estrato</b>, que es el caso de la planilla de muestreos de Suri Yaco, el N-NO₃ de 0 a 60 cm es la suma directa de los estratos: <code>0–20 + 20–60</code>, sin conversión. Un estrato informado como 20–40 se toma como 20–60.</p>
+    <p>Si informa <b>ppm</b>, se convierte con <code>N-NO₃ (kg/ha) = ppm × dap × espesor(cm) / 10</code>, sumando 0–20 y 20–60 cm. El selector de unidad, en los supuestos, decide cuál de los dos caminos se usa.</p>
     <p><code>N mineralizado = MO% × masa de suelo 0–20 × fracción N de la MO × tasa de mineralización</code>, con la tasa corregida por fecha de siembra. Es una estimación: si contás con Nan (N anaeróbico) de laboratorio conviene reemplazarla por una calibración local.</p>
     <p><code>Oferta total = N-NO₃ (0–60) + N mineralizado + aporte del antecesor</code></p>
 
@@ -589,7 +627,7 @@ svg.chart text{font-family:inherit}
     <p>El uso práctico es el diagnóstico: si una zona queda por debajo de la banda, el N está limitando aunque los kg N/ha parezcan razonables; si queda por encima, es fertilizante que en ese tipo de año no se va a pagar. Como el tipo de año se conoce recién al final del ciclo, la lectura honesta es de escenario: mirá la dosis con año normal y después con año seco, y decidí cuánto riesgo querés tomar.</p>
 
     <h4>6 · Fósforo y azufre</h4>
-    <p>Si P Bray está sobre el umbral, se repone una fracción de la extracción del rinde objetivo. Si está por debajo, se suma una corrección parcial hacia el umbral. El N que aporta el arrancador se descuenta de la dosis nitrogenada. La sugerencia de S se activa por debajo del umbral y es orientativa: conviene contrastarla con ensayos locales.</p>
+    <p>Si P Bray está sobre el umbral, se repone una fracción de la extracción del rinde objetivo. Si está por debajo, se suma una corrección parcial hacia el umbral. El N que aporta el arrancador se descuenta siempre de la dosis nitrogenada; si la fuente fosforada es <b>Ninguno</b>, no hay aporte ni costo de arrancador, pero la recomendación de P₂O₅ se sigue mostrando como diagnóstico. La sugerencia de S se activa por debajo del umbral y es orientativa: conviene contrastarla con ensayos locales.</p>
     <p><b>El azufre de la fuente nitrogenada se descuenta del requerimiento.</b> La tabla separa el S total que pide la zona, el que ya viene en el fertilizante nitrogenado y el que hay que agregar aparte; sólo ese faltante se cobra, al costo por kg de S que fijes. Con Solmix 80-20, por ejemplo, 100 kg N/ha equivalen a 357 kg de producto y 18,6 kg de S/ha, que suelen cubrir el requerimiento completo del maíz.</p>
 
     <h4>7 · La fuente nitrogenada cambia el cálculo, no sólo el precio</h4>
@@ -691,12 +729,292 @@ const FUENTES_N = {
   sam:     {nom:'Sulfato de amonio',     n:21,   s:24,  ef:1.00, precio:480}
 };
 const FUENTES_P = {
+  ninguno: {nom:'Sin arrancador',   n:0,  p:0,  precio:0},
   map: {nom:'MAP',                  n:11, p:52, precio:1080},
   sfa: {nom:'Superfosfato triple',  n:0,  p:46, precio:820},
   dap: {nom:'DAP',                  n:18, p:46, precio:1010}
 };
 
 let SY_ROWS=[["Baralle","AB01","20-21",295,"Bb Qco","Maíz"],["Baralle","AB01","21-22",295,"Bb Qco","Soja"],["Baralle","AB01","22-23",295,"Garbanzo","Maíz"],["Baralle","AB01","23-24",295,"Bb Qco","Soja"],["Baralle","AB01","24-25",295,"Bb Qco","Maíz"],["Baralle","AB01","25-26",295,"Centeno (CS)","Soja"],["Baralle","AB01","26-27",295,"Colza","Maíz"],["Baralle","AB02","20-21",295,"Bb Qco","Maíz"],["Baralle","AB02","21-22",295,"Bb Qco","Soja"],["Baralle","AB02","22-23",295,"Garbanzo","Maíz"],["Baralle","AB02","23-24",295,"Bb Qco","Soja"],["Baralle","AB02","24-25",295,"Bb Qco","Maíz"],["Baralle","AB02","25-26",295,"Centeno (CS)","Soja"],["Baralle","AB02","26-27",295,"Colza","Maíz"],["Campo Viejo","CV01","24-25",444,"Bb Qco","Soja"],["Campo Viejo","CV01","25-26",530,"Centeno (CS)","Soja"],["Campo Viejo","CV01","26-27",530,"Avena (CS)","Maíz"],["Campo Viejo","CV02","24-25",589,"Bb Qco","Maíz"],["Campo Viejo","CV02","25-26",588,"Bb Qco","Soja"],["Campo Viejo","CV02","26-27",588,"Centeno A (CS)","Maíz"],["Campo Viejo","CV03","24-25",276,"Bb Qco","Soja"],["Campo Viejo","CV03","25-26",340,"Centeno (CS)","Maíz"],["Campo Viejo","CV03","26-27",340,"Centeno A (CS)","Soja"],["Campo Viejo","CV04","24-25",402,"Bb Qco","Soja"],["Campo Viejo","CV04","25-26",395,"Centeno (CS)","Maíz"],["Campo Viejo","CV04","26-27",395,"Centeno A (CS)","Soja"],["Campo Viejo","CV05","25-26",126,"Hab - Moha","Maíz"],["Campo Viejo","CV05","26-27",126,"Centeno A (CS)","Soja"],["Carregio","EC01","20-21",174,"Trigo","Maíz"],["Carregio","EC01","21-22",174,"Bb Qco","Soja"],["Carregio","EC01","22-23",174,"Trigo","Maíz"],["Carregio","EC01","23-24",174,"Centeno (CS)","Soja"],["Carregio","EC01","24-25",97,"Trigo","Maíz"],["Carregio","EC01","24-25",77,"Trigo","Maíz"],["Carregio","EC01","25-26",175,"Bb Qco","Soja"],["Carregio","EC01","26-27",175,"Trigo","Maíz"],["Carregio","EC02","20-21",100,"Trigo","Maíz"],["Carregio","EC02","21-22",100,"Bb Qco","Soja"],["Carregio","EC02","22-23",100,"Trigo","Maíz"],["Carregio","EC02","23-24",100,"Centeno (CS)","Soja"],["Carregio","EC02","24-25",100,"Trigo","Maíz"],["Carregio","EC02","25-26",100,"Bb Qco","Soja"],["Carregio","EC02","26-27",100,"Trigo","Maíz"],["Carregio","EC03","25-26",90,"Trigo","Maíz"],["Carregio","EC03","26-27",90,"Centeno S (CS)","Soja"],["Carregio","JC01","20-21",366,"Trigo","Maíz"],["Carregio","JC01","21-22",366,"Bb Qco","Soja"],["Carregio","JC01","22-23",366,"Trigo","Maíz"],["Carregio","JC01","23-24",366,"Centeno (CS)","Soja"],["Carregio","JC01","24-25",366,"Trigo","Maíz"],["Carregio","JC01","25-26",366,"Bb Qco","Soja"],["Carregio","JC01","26-27",366,"Trigo","Maíz"],["El Desierto","ED01","25-26",166,"Bb Qco","Soja"],["El Desierto","ED01","26-27",166,"Cartamo","Maíz"],["El Desierto","ED02","25-26",202,"Bb Qco","Soja"],["El Desierto","ED02","26-27",202,"Cartamo","Maíz"],["El Desierto","ED03","25-26",230,"Bb Qco","Soja"],["El Desierto","ED03","26-27",230,"Cartamo","Maíz"],["El Desierto","ED04","25-26",56,"Bb Qco","Soja"],["El Desierto","ED04","26-27",56,"Cartamo","Maíz"],["El Desierto","ED05","25-26",134,"Bb Qco","Soja"],["El Desierto","ED05","26-27",134,"Cartamo","Maíz"],["El Desierto","ED06","25-26",230,"Bb Qco","Soja"],["El Desierto","ED06","26-27",230,"Trigo","Maíz"],["El Estribo","EE01","20-21",131,"Bb Qco","Soja"],["El Estribo","EE01","21-22",131,"Garbanzo","Maíz"],["El Estribo","EE01","22-23",131,"CS (Centeno+Vicia)","Soja"],["El Estribo","EE01","23-24",131,"Garbanzo","Maíz"],["El Estribo","EE01","24-25",131,"Bb Qco","Soja"],["El Estribo","EE01","25-26",131,"Trigo","Maíz"],["El Estribo","EE01","26-27",131,"Bb Qco","Soja"],["El Estribo","EE02","20-21",180,"Bb Qco","Soja"],["El Estribo","EE02","21-22",180,"Garbanzo","Maíz"],["El Estribo","EE02","22-23",180,"Centeno (CS)","Soja"],["El Estribo","EE02","23-24",180,"Garbanzo","Maíz"],["El Estribo","EE02","24-25",180,"Bb Qco","Soja"],["El Estribo","EE02","25-26",180,"Trigo","Maíz"],["El Estribo","EE02","26-27",180,"Bb Qco","Soja"],["El Estribo","EE03","20-21",115,"Bb Qco","Soja"],["El Estribo","EE03","21-22",115,"Garbanzo","Maíz"],["El Estribo","EE03","22-23",115,"Centeno (CS)","Soja"],["El Estribo","EE03","23-24",115,"Garbanzo","Maíz"],["El Estribo","EE03","24-25",115,"Bb Qco","Soja"],["El Estribo","EE03","25-26",115,"Centeno (CS)","Maíz"],["El Estribo","EE03","26-27",115,"Bb Qco","Soja"],["El Estribo","EE04","20-21",114,"Bb Qco","Soja"],["El Estribo","EE04","21-22",114,"Garbanzo","Maíz"],["El Estribo","EE04","22-23",114,"Centeno (CS)","Soja"],["El Estribo","EE04","23-24",114,"Garbanzo","Maíz"],["El Estribo","EE04","24-25",114,"Bb Qco","Soja"],["El Estribo","EE04","25-26",114,"Centeno (CS)","Maíz"],["El Estribo","EE04","26-27",114,"Bb Qco","Soja"],["El Estribo","EE05","20-21",94,"Bb Qco","Soja"],["El Estribo","EE05","21-22",94,"Garbanzo","Maíz"],["El Estribo","EE05","22-23",94,"Centeno (CS)","Soja"],["El Estribo","EE05","23-24",94,"Garbanzo","Maíz"],["El Estribo","EE05","24-25",94,"Bb Qco","Soja"],["El Estribo","EE05","25-26",94,"Centeno (CS)","Maíz"],["El Estribo","EE05","26-27",94,"Bb Qco","Soja"],["El Estribo","EE06","20-21",162,"Bb Qco","Soja"],["El Estribo","EE06","21-22",162,"Trigo","Maíz"],["El Estribo","EE06","22-23",162,"Bb Qco","Soja"],["El Estribo","EE06","23-24",162,"Trigo","Maíz"],["El Estribo","EE06","24-25",162,"Bb Qco","Soja"],["El Estribo","EE06","25-26",162,"Trigo","Maíz"],["El Estribo","EE06","26-27",162,"Bb Qco","Soja"],["El Estribo","EE07","20-21",125,"Bb Qco","Soja"],["El Estribo","EE07","21-22",125,"Trigo","Maíz"],["El Estribo","EE07","22-23",125,"Bb Qco","Soja"],["El Estribo","EE07","23-24",125,"Trigo","Maíz"],["El Estribo","EE07","24-25",125,"Bb Qco","Soja"],["El Estribo","EE07","25-26",125,"Centeno (CS)","Maíz"],["El Estribo","EE07","26-27",125,"Bb Qco","Soja"],["El Estribo","EE08A","20-21",82,"Bb Qco","Maíz"],["El Estribo","EE08A","21-22",82,"Bb Qco","Soja"],["El Estribo","EE08A","22-23",82,"Garbanzo","Maíz"],["El Estribo","EE08A","23-24",82,"Bb Qco","Soja"],["El Estribo","EE08A","24-25",82,"Bb Qco","Maíz"],["El Estribo","EE08A","25-26",82,"Centeno (CS)","Soja"],["El Estribo","EE08A","26-27",82,"Colza","Maíz"],["El Estribo","EE08B","20-21",71,"Bb Qco","Maíz"],["El Estribo","EE08B","21-22",71,"Bb Qco","Soja"],["El Estribo","EE08B","22-23",71,"Garbanzo","Maíz"],["El Estribo","EE08B","23-24",71,"Bb Qco","Soja"],["El Estribo","EE08B","24-25",71,"Bb Qco","Maíz"],["El Estribo","EE08B","25-26",71,"Trigo","Soja"],["El Estribo","EE08B","26-27",71,"Colza","Maíz"],["El Estribo","EE09A","20-21",68,"Bb Qco","Maíz"],["El Estribo","EE09A","21-22",68,"Bb Qco","Soja"],["El Estribo","EE09A","22-23",68,"Garbanzo","Maíz"],["El Estribo","EE09A","23-24",68,"Bb Qco","Soja"],["El Estribo","EE09A","24-25",68,"Bb Qco","Maíz"],["El Estribo","EE09A","25-26",68,"Centeno (CS)","Soja"],["El Estribo","EE09A","26-27",68,"Colza","Maíz"],["El Estribo","EE09B","20-21",51,"Bb Qco","Maíz"],["El Estribo","EE09B","21-22",51,"Bb Qco","Soja"],["El Estribo","EE09B","22-23",51,"Garbanzo","Maíz"],["El Estribo","EE09B","23-24",51,"Bb Qco","Soja"],["El Estribo","EE09B","24-25",51,"Bb Qco","Maíz"],["El Estribo","EE09B","25-26",51,"Centeno (CS)","Soja"],["El Estribo","EE09B","26-27",51,"Colza","Maíz"],["El Estribo","EE10A","20-21",58,"Bb Qco","Maíz"],["El Estribo","EE10A","21-22",58,"Bb Qco","Soja"],["El Estribo","EE10A","22-23",58,"Garbanzo","Maíz"],["El Estribo","EE10A","23-24",58,"Bb Qco","Soja"],["El Estribo","EE10A","24-25",58,"Bb Qco","Maíz"],["El Estribo","EE10A","25-26",58,"Centeno (CS)","Soja"],["El Estribo","EE10A","26-27",58,"Colza","Maíz"],["El Estribo","EE10B","20-21",46,"Bb Qco","Maíz"],["El Estribo","EE10B","21-22",46,"Bb Qco","Soja"],["El Estribo","EE10B","22-23",46,"Garbanzo","Maíz"],["El Estribo","EE10B","23-24",46,"Bb Qco","Soja"],["El Estribo","EE10B","24-25",46,"Bb Qco","Maíz"],["El Estribo","EE10B","25-26",46,"Centeno (CS)","Soja"],["El Estribo","EE10B","26-27",46,"Colza","Maíz"],["Grintur","GT01","20-21",330,"Bb Qco","Soja"],["Grintur","GT01","21-22",330,"Trigo","Maíz"],["Grintur","GT01","22-23",330,"Centeno (CS)","Soja"],["Grintur","GT01","23-24",330,"Trigo","Maíz"],["Grintur","GT01","24-25",330,"Bb Qco","Soja"],["Grintur","GT01","25-26",330,"Colza","Maíz"],["Grintur","GT01","26-27",330,"Centeno S (CS)","Soja"],["Grintur","GT02","20-21",322,"Bb Qco","Soja"],["Grintur","GT02","21-22",322,"Trigo","Maíz"],["Grintur","GT02","22-23",322,"Centeno (CS)","Soja"],["Grintur","GT02","23-24",322,"Trigo","Maíz"],["Grintur","GT02","24-25",322,"Bb Qco","Soja"],["Grintur","GT02","25-26",322,"Colza","Maíz"],["Grintur","GT02","26-27",322,"Centeno S (CS)","Soja"],["Grintur","GT03","20-21",322,"Bb Qco","Maíz"],["Grintur","GT03","21-22",322,"Bb Qco","Soja"],["Grintur","GT03","22-23",322,"Trigo","Maíz"],["Grintur","GT03","23-24",322,"Centeno (CS)","Soja"],["Grintur","GT03","24-25",322,"Garbanzo","Maíz"],["Grintur","GT03","25-26",322,"Bb Qco","Soja"],["Grintur","GT03","26-27",322,"Trigo","Maíz"],["Grintur","GT04","20-21",244,"Bb Qco","Maíz"],["Grintur","GT04","21-22",244,"Bb Qco","Soja"],["Grintur","GT04","22-23",244,"Trigo","Maíz"],["Grintur","GT04","23-24",244,"Centeno (CS)","Soja"],["Grintur","GT04","24-25",244,"Garbanzo","Maíz"],["Grintur","GT04","25-26",244,"Bb Qco","Soja"],["Grintur","GT04","26-27",244,"Trigo","Maíz"],["Leguizamón","RL01","23-24",60,"Bb Qco","Maíz"],["Leguizamón","RL01","24-25",60,"Bb Qco","Soja"],["Leguizamón","RL01","25-26",60,"Trigo","Soja"],["Leguizamón","RL01","26-27",60,"Girasol","Moha (CS)"],["Marin","HM01","20-21",156,"Bb Qco","Soja"],["Marin","HM01","21-22",156,"Garbanzo","Maíz"],["Marin","HM01","22-23",156,"CS (Centeno+Vicia)","Soja"],["Marin","HM01","23-24",156,"Garbanzo","Maíz"],["Marin","HM01","24-25",156,"Bb Qco","Soja"],["Marin","HM01","25-26",156,"Trigo","Maíz"],["Marin","HM01","26-27",156,"Bb Qco","Soja"],["Marin","HM02","20-21",149,"Bb Qco","Soja"],["Marin","HM02","21-22",149,"Trigo","Maíz"],["Marin","HM02","22-23",149,"Bb Qco","Soja"],["Marin","HM02","23-24",149,"Bb Qco","Maíz"],["Marin","HM02","24-25",149,"Bb Qco","Soja"],["Marin","HM02","25-26",149,"Trigo","Maíz"],["Marin","HM02","26-27",149,"Bb Qco","Soja"],["Marin","HM03","20-21",77,"Bb Qco","Maíz"],["Marin","HM03","21-22",77,"Bb Qco","Soja"],["Marin","HM03","22-23",77,"Garbanzo","Maíz"],["Marin","HM03","23-24",77,"Bb Qco","Soja"],["Marin","HM03","24-25",77,"Bb Qco","Maíz"],["Marin","HM03","25-26",77,"Trigo","Soja"],["Marin","HM03","26-27",77,"Colza","Maíz"],["Miró","RM01A","20-21",125,"Bb Qco","Soja"],["Miró","RM01A","21-22",125,"Bb Qco","Maíz"],["Miró","RM01A","22-23",125,"CS (Moha)","Soja"],["Miró","RM01A","23-24",125,"Bb Qco","Maíz"],["Miró","RM01A","24-25",125,"Bb Qco","Soja"],["Miró","RM01A","25-26",125,"Trigo","Maíz"],["Miró","RM01A","26-27",125,"Girasol","Moha (CS)"],["Miró","RM01B","20-21",47,"Bb Qco","Soja"],["Miró","RM01B","21-22",47,"Bb Qco","Maíz"],["Miró","RM01B","22-23",47,"CS (Moha)","Soja"],["Miró","RM01B","23-24",47,"Bb Qco","Maíz"],["Miró","RM01B","24-25",47,"Bb Qco","Soja"],["Miró","RM01B","25-26",47,"Trigo","Soja"],["Miró","RM01B","26-27",47,"Trigo","Maíz"],["Miró","RM02","21-22",145,"Bb Qco","Maíz"],["Miró","RM02","22-23",145,"CS (Moha)","Soja"],["Miró","RM02","23-24",200,"Bb Qco","Maíz"],["Miró","RM02","24-25",145,"Bb Qco","Soja"],["Miró","RM02","25-26",145,"Trigo","Soja"],["Miró","RM02","26-27",145,"Trigo","Maíz"],["Miró","RM03","24-25",41,"Bb Qco","Soja"],["Miró","RM03","25-26",40,"Trigo","Soja"],["Miró","RM03","26-27",40,"Trigo","Maíz"],["Miró","RM05","24-25",9,"Bb Qco","Soja"],["Miró","RM05","25-26",22,"Moha","Maíz"],["Miró","RM05","26-27",21,"Girasol","Moha (CS)"],["Miró","RM06","20-21",65,"Bb Qco","Soja"],["Miró","RM06","21-22",65,"Bb Qco","Maíz"],["Miró","RM06","22-23",65,"CS (Moha)","Soja"],["Miró","RM06","23-24",65,"Bb Qco","Maíz"],["Miró","RM06","24-25",65,"Bb Qco","Soja"],["Miró","RM06","25-26",65,"Trigo","Maíz"],["Miró","RM06","26-27",63,"Girasol","Moha (CS)"],["San Claudio","SC01","26-27",182,"Camelina","Maíz"],["San Claudio","SC01A","20-21",49,"Bb Qco","Soja"],["San Claudio","SC01A","21-22",49,"Bb Qco","Maíz"],["San Claudio","SC01A","22-23",49,"CS (Moha)","Soja"],["San Claudio","SC01A","23-24",49,"Trigo","Maíz"],["San Claudio","SC01A","24-25",49,"Bb Qco","Soja"],["San Claudio","SC01A","25-26",49,"Trigo","Soja"],["San Claudio","SC01B","20-21",133,"Centeno","Soja"],["San Claudio","SC01B","21-22",133,"Bb Qco","Maíz"],["San Claudio","SC01B","22-23",133,"CS (Moha+Centeno)","Soja"],["San Claudio","SC01B","23-24",133,"Trigo","Maíz"],["San Claudio","SC01B","24-25",133,"Bb Qco","Soja"],["San Claudio","SC01B","25-26",133,"Trigo","Soja"],["San Claudio","SC02A","20-21",114,"Bb Qco","Soja"],["San Claudio","SC02A","21-22",114,"Bb Qco","Maíz"],["San Claudio","SC02A","22-23",114,"CS (Moha)","Soja"],["San Claudio","SC02A","23-24",114,"Bb Qco","Maíz"],["San Claudio","SC02A","24-25",114,"Bb Qco","Soja"],["San Claudio","SC02A","25-26",95,"Trigo","Maíz"],["San Claudio","SC02A","26-27",95,"Girasol","Moha (CS)"],["San Claudio","SC02B","20-21",70,"Centeno","Soja"],["San Claudio","SC02B","21-22",70,"Bb Qco","Maíz"],["San Claudio","SC02B","22-23",70,"CS (Moha+Centeno)","Soja"],["San Claudio","SC02B","23-24",70,"Trigo","Maíz"],["San Claudio","SC02B","24-25",70,"Bb Qco","Soja"],["San Claudio","SC02B","25-26",90,"Trigo","Soja"],["San Claudio","SC02B","26-27",90,"Camelina","Maíz"],["San Claudio","SC03A","20-21",53,"Bb Qco","Soja"],["San Claudio","SC03A","21-22",53,"Bb Qco","Maíz"],["San Claudio","SC03A","22-23",53,"Centeno (CS)","Soja"],["San Claudio","SC03A","23-24",53,"Bb Qco","Maíz"],["San Claudio","SC03A","24-25",53,"Bb Qco","Soja"],["San Claudio","SC03A","25-26",53,"Colza","Maíz"],["San Claudio","SC03A","26-27",53,"Girasol","Moha (CS)"],["San Claudio","SC03B","20-21",38,"Bb Qco","Soja"],["San Claudio","SC03B","21-22",38,"Bb Qco","Maíz"],["San Claudio","SC03B","22-23",38,"Centeno (CS)","Soja"],["San Claudio","SC03B","23-24",38,"Bb Qco","Maíz"],["San Claudio","SC03B","24-25",38,"Bb Qco","Soja"],["San Claudio","SC03B","25-26",38,"Colza","Soja"],["San Claudio","SC03B","26-27",38,"Camelina","Moha (CS)"],["San Claudio","SC04","20-21",176,"Bb Qco","Soja"],["San Claudio","SC04","21-22",176,"Bb Qco","Maíz"],["San Claudio","SC04","22-23",176,"Centeno (CS)","Soja"],["San Claudio","SC04","23-24",176,"Bb Qco","Maíz"],["San Claudio","SC04","24-25",176,"Bb Qco","Soja"],["San Claudio","SC04","25-26",176,"Colza","Maíz"],["San Claudio","SC04","26-27",176,"Girasol","Moha (CS)"],["San Claudio","SC05","20-21",148,"Bb Qco","Soja"],["San Claudio","SC05","21-22",148,"Bb Qco","Maíz"],["San Claudio","SC05","22-23",148,"Bb Qco","Soja"],["San Claudio","SC05","23-24",148,"Bb Qco","Maíz"],["San Claudio","SC05","24-25",148,"Bb Qco","Soja"],["San Claudio","SC05","25-26",148,"Colza","Maíz"],["San Claudio","SC05","26-27",148,"Girasol","Moha (CS)"],["San Claudio","SC06","20-21",83,"Bb Qco","Soja"],["San Claudio","SC06","21-22",83,"Bb Qco","Maíz"],["San Claudio","SC06","22-23",83,"Bb Qco","Soja"],["San Claudio","SC06","23-24",83,"Bb Qco","Maíz"],["San Claudio","SC06","24-25",83,"Bb Qco","Soja"],["San Claudio","SC06","25-26",83,"Colza","Maíz"],["San Claudio","SC06","26-27",83,"Girasol","Moha (CS)"],["San Claudio","SC07","20-21",130,"Bb Qco","Soja"],["San Claudio","SC07","21-22",130,"Bb Qco","Maíz"],["San Claudio","SC07","22-23",130,"Bb Qco","Soja"],["San Claudio","SC07","23-24",130,"Bb Qco","Maíz"],["San Claudio","SC07","24-25",130,"Bb Qco","Soja"],["San Claudio","SC07","25-26",130,"Trigo","Maíz"],["San Claudio","SC07","26-27",130,"Girasol","Moha (CS)"],["San Claudio","SC08","21-22",46,"Bb Qco","Maíz"],["San Claudio","SC08","22-23",46,"Bb Qco","Soja"],["San Claudio","SC08","23-24",46,"Bb Qco","Maíz"],["San Claudio","SC08","24-25",46,"Bb Qco","Soja"],["San Claudio","SC08","25-26",45,"Trigo","Maíz"],["San Claudio","SC08","26-27",45,"Girasol","Moha (CS)"],["San Claudio","SC09","25-26",64,"Bb Qco","Moha (CS)"],["San Claudio","SC09","26-27",64,"Colza","Maíz"]];
+
+
+/* Copias embebidas de SY_Ambientes y DS_Lab, agregadas el 25/09/2026 */
+let AMB_ROWS=[["24-25","Baralle","AB01","Alto Potencial",85.2,63000,"Media:85.2"],["24-25","Baralle","AB01","Bajo Potencial",37.5,50000,"Muy Baja:37.5"],["24-25","Baralle","AB01","Medio Potencial",47.5,58000,"Baja:47.5"],["24-25","Baralle","AB01","Muy Alto Potencial",115.7,65000,"Alta:77.4|Media:38.3"],["24-25","Baralle","AB02","Alto Potencial",77.4,63000,"Media:77.4"],["24-25","Baralle","AB02","Bajo Potencial",34.4,50000,"Muy Baja:34.4"],["24-25","Baralle","AB02","Medio Potencial",49.1,58000,"Baja:49.1"],["24-25","Baralle","AB02","Muy Alto Potencial",121.4,65000,"Alta:84.9|Media:36.5"],["24-25","Carregio","EC01","Alto Potencial",43.0,65000,"Media:43.0"],["24-25","Carregio","EC01","Bajo Potencial",30.1,55000,"Muy Baja:30.1"],["24-25","Carregio","EC01","Medio Potencial",22.0,60000,"Baja:22.0"],["24-25","Carregio","EC01","Muy Alto Potencial",80.5,70000,"Alta:53.1|Media:27.4"],["24-25","Carregio","EC02","Alto Potencial",25.6,65000,"Media:25.6"],["24-25","Carregio","EC02","Bajo Potencial",11.7,55000,"Muy Baja:11.7"],["24-25","Carregio","EC02","Medio Potencial",19.8,60000,"Baja:19.8"],["24-25","Carregio","EC02","Muy Alto Potencial",40.6,70000,"Alta:26.8|Media:13.9"],["24-25","Carregio","JC01","Alto Potencial",100.4,65000,"Media:100.4"],["24-25","Carregio","JC01","Bajo Potencial",61.4,55000,"Muy Baja:61.4"],["24-25","Carregio","JC01","Medio Potencial",51.5,60000,"Baja:51.5"],["24-25","Carregio","JC01","Muy Alto Potencial",153.5,70000,"Alta:117.4|Media:36.1"],["24-25","El Estribo","EE08 A","Alto Potencial",32.4,65000,"Alta:21.0|Media:11.5"],["24-25","El Estribo","EE08 A","Bajo Potencial",11.3,55000,"Baja:11.3"],["24-25","El Estribo","EE08 A","Medio Potencial",25.7,60000,"Media:25.7"],["24-25","El Estribo","EE08 A","Muy Bajo Potencial",12.5,50000,"Muy Baja:12.5"],["24-25","El Estribo","EE08 B","Alto Potencial",29.8,55000,"Alta:21.6|Media:8.1"],["24-25","El Estribo","EE08 B","Bajo Potencial",12.6,50000,"Baja:12.6"],["24-25","El Estribo","EE08 B","Medio Potencial",18.5,53000,"Media:18.5"],["24-25","El Estribo","EE08 B","Muy Bajo Potencial",10.3,45000,"Muy Baja:10.3"],["24-25","El Estribo","EE09 A","Alto Potencial",25.0,65000,"Alta:17.5|Media:7.6"],["24-25","El Estribo","EE09 A","Bajo Potencial",9.7,55000,"Baja:9.7"],["24-25","El Estribo","EE09 A","Medio Potencial",24.5,60000,"Media:24.5"],["24-25","El Estribo","EE09 A","Muy Bajo Potencial",8.5,50000,"Muy Baja:8.5"],["24-25","El Estribo","EE09 B","Alto Potencial",21.5,55000,"Alta:15.5|Media:6.1"],["24-25","El Estribo","EE09 B","Bajo Potencial",7.6,50000,"Baja:7.6"],["24-25","El Estribo","EE09 B","Medio Potencial",17.1,53000,"Media:17.1"],["24-25","El Estribo","EE09 B","Muy Bajo Potencial",4.5,45000,"Muy Baja:4.5"],["24-25","El Estribo","EE10 A","Alto Potencial",25.9,65000,"Alta:16.8|Media:9.1"],["24-25","El Estribo","EE10 A","Bajo Potencial",8.4,55000,"Baja:8.4"],["24-25","El Estribo","EE10 A","Medio Potencial",16.8,60000,"Media:16.8"],["24-25","El Estribo","EE10 A","Muy Bajo Potencial",6.9,50000,"Muy Baja:6.9"],["24-25","El Estribo","EE10 B","Alto Potencial",19.5,55000,"Alta:11.7|Media:7.8"],["24-25","El Estribo","EE10 B","Bajo Potencial",5.6,50000,"Baja:5.6"],["24-25","El Estribo","EE10 B","Medio Potencial",14.6,53000,"Media:14.6"],["24-25","El Estribo","EE10 B","Muy Bajo Potencial",6.7,45000,"Muy Baja:6.7"],["24-25","Grintur","GT03","Alto Potencial",88.6,65000,"Baja:45.5|Media:43.0"],["24-25","Grintur","GT03","Bajo Potencial",48.5,55000,"Muy Baja:48.5"],["24-25","Grintur","GT03","Muy Alto Potencial",186.9,70000,"Media:95.5|Alta:91.4"],["24-25","Grintur","GT04","Alto Potencial",70.7,65000,"Media:39.0|Baja:31.6"],["24-25","Grintur","GT04","Bajo Potencial",32.0,55000,"Muy Baja:32.0"],["24-25","Grintur","GT04","Muy Alto Potencial",138.7,70000,"Media:71.0|Alta:67.7"],["24-25","Marin","HM03","Alto Potencial",35.1,55000,"Alta:23.0|Media:12.0"],["24-25","Marin","HM03","Bajo Potencial",11.4,50000,"Baja:11.4"],["24-25","Marin","HM03","Medio Potencial",21.6,53000,"Media:21.6"],["24-25","Marin","HM03","Muy Bajo Potencial",9.3,45000,"Muy Baja:9.3"],["25-26","Campo Viejo","CV03","Dosis Fija",340.0,55000,""],["25-26","Campo Viejo","CV04","Dosis Fija",395.0,53000,""],["25-26","Campo Viejo","CV05","Dosis Fija",126.0,53000,""],["25-26","Carregio","EC03","Dosis Fija",90.0,53000,""],["25-26","El Estribo","EE01","Alto Potencial",100.4,57000,"Media:68.8|Alta:31.5"],["25-26","El Estribo","EE01","Bajo Potencial",11.4,50000,"Muy Baja:11.4"],["25-26","El Estribo","EE01","Medio Potencial",17.8,55000,"Baja:17.8"],["25-26","El Estribo","EE02","Alto Potencial",125.0,57000,"Media:74.1|Alta:51.0"],["25-26","El Estribo","EE02","Bajo Potencial",24.1,50000,"Muy Baja:24.1"],["25-26","El Estribo","EE02","Medio Potencial",23.6,55000,"Baja:23.6"],["25-26","El Estribo","EE03","Alto Potencial",79.5,60000,"Media:55.1|Alta:24.4"],["25-26","El Estribo","EE03","Bajo Potencial",12.3,50000,"Muy Baja:12.3"],["25-26","El Estribo","EE03","Medio Potencial",14.3,57000,"Baja:14.3"],["25-26","El Estribo","EE04","Alto Potencial",80.4,60000,"Media:52.6|Alta:27.8"],["25-26","El Estribo","EE04","Bajo Potencial",13.2,50000,"Muy Baja:13.2"],["25-26","El Estribo","EE04","Medio Potencial",14.1,57000,"Baja:14.1"],["25-26","El Estribo","EE05","Alto Potencial",67.7,60000,"Media:39.1|Alta:28.6"],["25-26","El Estribo","EE05","Bajo Potencial",13.9,50000,"Muy Baja:13.9"],["25-26","El Estribo","EE05","Medio Potencial",12.5,57000,"Baja:12.5"],["25-26","El Estribo","EE06","Alto Potencial",117.8,57000,"Media:78.7|Alta:39.1"],["25-26","El Estribo","EE06","Bajo Potencial",22.3,50000,"Muy Baja:22.3"],["25-26","El Estribo","EE06","Medio Potencial",20.7,55000,"Baja:20.7"],["25-26","El Estribo","EE07","Alto Potencial",93.7,57000,"Media:67.6|Alta:26.2"],["25-26","El Estribo","EE07","Bajo Potencial",17.4,50000,"Muy Baja:17.4"],["25-26","El Estribo","EE07","Medio Potencial",15.9,55000,"Baja:15.9"],["25-26","Grintur","GT01","Alto Potencial",281.3,55000,"Media:136.5|Alta:91.5|Baja:53.2"],["25-26","Grintur","GT01","Bajo Potencial",46.3,52000,"Muy Baja:46.3"],["25-26","Grintur","GT02","Alto Potencial",279.1,60000,"Media:134.6|Alta:97.4|Baja:47.0"],["25-26","Grintur","GT02","Bajo Potencial",43.7,50000,"Muy Baja:43.7"],["25-26","Marin","HM01","Alto Potencial",107.3,57000,"Media:68.2|Alta:39.1"],["25-26","Marin","HM01","Bajo Potencial",18.5,50000,"Muy Baja:18.5"],["25-26","Marin","HM01","Medio Potencial",24.4,55000,"Baja:24.4"],["25-26","Marin","HM02","Alto Potencial",103.0,60000,"Media:61.3|Alta:41.6"],["25-26","Marin","HM02","Bajo Potencial",21.6,50000,"Muy Baja:21.6"],["25-26","Marin","HM02","Medio Potencial",19.2,57000,"Baja:19.2"],["25-26","Miró","RM01A","Alto Potencial",103.2,57000,"Media:61.5|Alta:41.7"],["25-26","Miró","RM01A","Bajo Potencial",1.7,50000,"Muy Baja:1.7"],["25-26","Miró","RM01A","Medio Potencial",21.0,55000,"Baja:21.0"],["25-26","Miró","RM06","Alto Potencial",45.7,57000,"Media:26.5|Alta:19.2"],["25-26","Miró","RM06","Bajo Potencial",12.7,50000,"Muy Baja:12.7"],["25-26","Miró","RM06","Medio Potencial",8.5,55000,"Baja:8.5"],["25-26","San Claudio","SC02A","Alto Potencial",85.1,60000,"Alta:48.6|Media:36.4"],["25-26","San Claudio","SC02A","Bajo Potencial",2.4,50000,"Muy Baja:2.4"],["25-26","San Claudio","SC02A","Medio Potencial",2.4,57000,"Baja:2.4"],["25-26","San Claudio","SC03A","Alto Potencial",43.4,60000,"Media:28.6|Alta:14.8"],["25-26","San Claudio","SC03A","Bajo Potencial",2.0,50000,"Muy Baja:2.0"],["25-26","San Claudio","SC03A","Medio Potencial",6.0,57000,"Baja:6.0"],["25-26","San Claudio","SC04","Alto Potencial",129.0,60000,"Media:86.8|Alta:42.2"],["25-26","San Claudio","SC04","Bajo Potencial",19.5,50000,"Muy Baja:19.5"],["25-26","San Claudio","SC04","Medio Potencial",22.5,57000,"Baja:22.5"],["25-26","San Claudio","SC05","Alto Potencial",102.9,60000,"Media:66.9|Alta:36.0"],["25-26","San Claudio","SC05","Bajo Potencial",20.2,50000,"Muy Baja:20.2"],["25-26","San Claudio","SC05","Medio Potencial",18.3,57000,"Baja:18.3"],["25-26","San Claudio","SC06","Alto Potencial",58.2,60000,"Media:36.8|Alta:21.4"],["25-26","San Claudio","SC06","Bajo Potencial",12.0,50000,"Muy Baja:12.0"],["25-26","San Claudio","SC06","Medio Potencial",11.4,57000,"Baja:11.4"],["25-26","San Claudio","SC07","Alto Potencial",97.1,60000,"Media:69.0|Alta:28.1"],["25-26","San Claudio","SC07","Bajo Potencial",15.2,50000,"Muy Baja:15.2"],["25-26","San Claudio","SC07","Medio Potencial",15.6,57000,"Baja:15.6"],["25-26","San Claudio","SC08","Dosis Fija",45.0,56000,""],["26-27","Leguizamón","RL01","Alto Potencial",12.3,63500,"Alta:12.3"],["26-27","Leguizamón","RL01","Bajo Potencial",2.2,49000,"Muy Baja:2.2"],["26-27","Leguizamón","RL01","Medio Potencial",45.4,58000,"Media:34.8|Baja:10.6"],["26-27","Miró","RM01","Alto Potencial",41.7,62500,"Alta:41.7"],["26-27","Miró","RM01","Bajo Potencial",18.5,49000,"Baja:16.8|Muy Baja:1.7"],["26-27","Miró","RM01","Medio Potencial",65.7,55000,"Media:61.5|Baja:4.2"],["26-27","Miró","RM05","Bajo Potencial",21.8,49000,""],["26-27","Miró","RM06","Alto Potencial",19.2,63500,"Alta:19.2"],["26-27","Miró","RM06","Bajo Potencial",21.1,49000,"Muy Baja:12.7|Baja:8.5"],["26-27","Miró","RM06","Medio Potencial",26.5,58000,"Media:26.5"],["26-27","San Claudio","SC02A","Alto Potencial",48.6,61000,"Alta:48.6"],["26-27","San Claudio","SC02A","Bajo Potencial",2.4,35500,"Muy Baja:2.4"],["26-27","San Claudio","SC02A","Medio Potencial",38.9,52000,"Media:36.4|Baja:2.4"],["26-27","San Claudio","SC03A","Alto Potencial",14.8,56500,"Alta:14.8"],["26-27","San Claudio","SC03A","Bajo Potencial",2.0,41000,"Muy Baja:2.0"],["26-27","San Claudio","SC03A","Medio Potencial",34.6,52000,"Media:28.6|Baja:6.0"],["26-27","San Claudio","SC04","Alto Potencial",42.2,56500,"Alta:42.2"],["26-27","San Claudio","SC04","Bajo Potencial",19.5,41000,"Muy Baja:19.5"],["26-27","San Claudio","SC04","Medio Potencial",109.3,52000,"Media:86.8|Baja:22.5"],["26-27","San Claudio","SC05","Alto Potencial",36.0,61000,"Alta:36.0"],["26-27","San Claudio","SC05","Bajo Potencial",20.2,35500,"Muy Baja:20.2"],["26-27","San Claudio","SC05","Medio Potencial",85.2,52000,"Media:66.9|Baja:18.3"],["26-27","San Claudio","SC06","Alto Potencial",21.4,56500,"Alta:21.4"],["26-27","San Claudio","SC06","Bajo Potencial",12.0,41000,"Muy Baja:12.0"],["26-27","San Claudio","SC06","Medio Potencial",48.2,52000,"Media:36.8|Baja:11.4"],["26-27","San Claudio","SC07","Alto Potencial",28.1,61000,"Alta:28.1"],["26-27","San Claudio","SC07","Bajo Potencial",15.2,35500,"Muy Baja:15.2"],["26-27","San Claudio","SC07","Medio Potencial",84.5,52000,"Media:69.0|Baja:15.6"],["26-27","San Claudio","SC08","Alto Potencial",9.7,56500,"Alta:9.7"],["26-27","San Claudio","SC08","Bajo Potencial",3.7,41000,"Muy Baja:3.7"],["26-27","San Claudio","SC08","Medio Potencial",31.7,52000,"Media:24.0|Baja:7.7"]];
+let LAB_ROWS=[["Baralle","AB01","Alta",{"mo":[2.85,20251123],"dap1":[1.22,20201115],"p":[24.5,20201115],"s":[9.1,20201115],"n060":[91.0,20241114]}],["Baralle","AB01","Baja",{"mo":[2.23,20251123],"dap1":[1.39,20201115],"p":[16.9,20201115],"s":[6.6,20201115],"n060":[62.0,20241114]}],["Baralle","AB02","Alta",{"mo":[2.88,20201115],"dap1":[1.15,20201115],"p":[56.6,20201115],"s":[13.6,20201115],"n020":[14.3,20231120],"n2060":[21.0,20231120],"n060":[100.0,20241114]}],["Baralle","AB02","Baja",{"mo":[2.88,20201115],"dap1":[1.3,20201115],"p":[43.2,20201115],"s":[11.1,20201115],"n020":[10.7,20231120],"n2060":[6.2,20231120],"n060":[58.0,20241114]}],["Campo Viejo","CV01","Alta",{"mo":[2.35,20260725],"p":[40.4,20260725]}],["Campo Viejo","CV01","Baja",{"mo":[1.78,20260725],"p":[35.6,20260725]}],["Campo Viejo","CV01","Media",{"mo":[2.1,20260725],"p":[38.4,20260725]}],["Campo Viejo","CV02","Alta",{"mo":[2.03,20260725],"p":[33.3,20260725]}],["Campo Viejo","CV02","Baja",{"mo":[2.13,20260725],"p":[35.8,20260725]}],["Campo Viejo","CV02","Media",{"mo":[1.9,20260725],"p":[39.2,20260725]}],["Campo Viejo","CV03","Alta",{"mo":[2.1,20260725],"p":[35.1,20260725]}],["Campo Viejo","CV03","Baja",{"mo":[2.21,20260725],"p":[39.6,20260725]}],["Campo Viejo","CV03","Media",{"mo":[2.21,20260725],"p":[26.9,20260725]}],["Campo Viejo","CV04","Alta",{"mo":[2.13,20260725],"p":[33.6,20260725]}],["Campo Viejo","CV04","Baja",{"mo":[2.1,20260725],"p":[39.7,20260725]}],["Campo Viejo","CV04","Media",{"mo":[2.28,20260725],"p":[28.9,20260725]}],["Campo Viejo","CV05","Alta",{"mo":[2.06,20260725],"p":[41.6,20260725]}],["Campo Viejo","CV05","Media",{"mo":[2.42,20260725],"p":[35.7,20260725]}],["Carregio","CA01","Alta",{"mo":[3.01,20201115],"dap1":[1.11,20201115],"p":[70.0,20201115],"s":[17.0,20201115],"n020":[14.0,20231120],"n2060":[13.7,20231120]}],["Carregio","CA01","Baja",{"mo":[2.66,20201115],"dap1":[1.22,20201115],"p":[55.0,20201115],"s":[12.0,20201115],"n020":[9.9,20231120],"n2060":[4.6,20231120]}],["Carregio","CA02","Alta",{"mo":[2.71,20220901],"p":[60.0,20220901],"s":[13.4,20220901]}],["Carregio","CA02","Baja",{"mo":[2.4,20220901],"p":[30.6,20220901],"s":[12.9,20220901]}],["Carregio","CA03","Alta",{"mo":[3.09,20201115],"dap1":[1.09,20201115],"p":[90.5,20201115],"s":[17.6,20201115]}],["Carregio","CA03","Baja",{"mo":[2.77,20201115],"dap1":[1.2,20201115],"p":[60.2,20201115],"s":[13.1,20201115]}],["Carregio","EC01","Alta",{"n060":[29.0,20241114]}],["Carregio","EC02","Alta",{"n060":[39.0,20241114]}],["Carregio","EC02","Baja",{"n060":[28.0,20241114]}],["Carregio","JC01","Alta",{"n060":[38.0,20241114],"mo":[2.28,20251123]}],["Carregio","JC01","Baja",{"n060":[41.0,20241114],"mo":[2.96,20251123]}],["El Desierto","ED01","Alta",{"mo":[2.22,20260725],"p":[42.7,20260725]}],["El Desierto","ED01","Baja",{"mo":[1.68,20260725],"p":[30.8,20260725]}],["El Desierto","ED01","Media",{"mo":[1.97,20260725],"p":[33.7,20260725]}],["El Desierto","ED02","Alta",{"mo":[2.12,20260725],"p":[38.7,20260725]}],["El Desierto","ED02","Baja",{"mo":[1.45,20260725],"p":[22.6,20260725]}],["El Desierto","ED02","Media",{"mo":[1.96,20260725],"p":[38.2,20260725]}],["El Desierto","ED03","Alta",{"mo":[2.22,20260725],"p":[40.5,20260725]}],["El Desierto","ED03","Baja",{"mo":[2.47,20260725],"p":[36.6,20260725]}],["El Desierto","ED03","Media",{"mo":[2.01,20260725],"p":[33.4,20260725]}],["El Desierto","ED04","Baja",{"mo":[1.76,20260725],"p":[27.1,20260725]}],["El Desierto","ED04","Media",{"mo":[1.99,20260725],"p":[40.6,20260725]}],["El Desierto","ED05","Alta",{"mo":[1.83,20260725],"p":[33.1,20260725]}],["El Desierto","ED05","Baja",{"mo":[2.08,20260725],"p":[37.2,20260725]}],["El Desierto","ED05","Media",{"mo":[1.61,20260725],"p":[22.0,20260725]}],["El Desierto","ED06","Alta",{"mo":[2.37,20260725],"p":[38.1,20260725]}],["El Desierto","ED06","Baja",{"mo":[2.29,20260725],"p":[27.1,20260725]}],["El Desierto","ED06","Media",{"mo":[2.29,20260725],"p":[33.6,20260725]}],["El Estribo","EE01","Alta",{"mo":[2.53,20251110],"p":[108.94,20251110],"s":[146.4,20251110],"n020":[63.2,20251110]}],["El Estribo","EE01","Baja",{"mo":[2.48,20220901],"p":[37.0,20220901],"s":[7.0,20220901],"n020":[5.0,20230512]}],["El Estribo","EE01","Media",{"mo":[2.88,20251110],"p":[89.55,20251110],"s":[142.7,20251110],"n020":[71.2,20251110]}],["El Estribo","EE02","Alta",{"n020":[48.6,20251123],"n2060":[21.0,20231120]}],["El Estribo","EE02","Baja",{"n020":[9.9,20231120],"n2060":[12.2,20231120]}],["El Estribo","EE02","Media",{"n020":[21.6,20251123]}],["El Estribo","EE03","Alta",{"mo":[2.68,20170905],"p":[83.2,20170905],"s":[19.2,20170905],"n020":[14.0,20230512]}],["El Estribo","EE03","Baja",{"mo":[2.55,20170905],"p":[84.7,20170905],"s":[18.4,20170905],"n020":[9.0,20230512]}],["El Estribo","EE04","Alta",{"mo":[2.83,20251123],"p":[39.0,20220901],"s":[9.0,20220901],"n020":[64.5,20251123],"n2060":[39.8,20251123]}],["El Estribo","EE04","Baja",{"mo":[2.12,20251123],"p":[33.0,20220901],"s":[8.0,20220901],"n020":[42.6,20251123],"n2060":[23.9,20251123]}],["El Estribo","EE05","Alta",{"mo":[1.67,20170905],"p":[71.3,20170905],"s":[12.0,20170905],"n020":[10.0,20230512]}],["El Estribo","EE05","Baja",{"mo":[2.01,20170905],"p":[81.4,20170905],"s":[14.5,20170905],"n020":[6.0,20230512]}],["El Estribo","EE06","Alta",{"mo":[2.62,20251110],"p":[60.67,20251110],"s":[126.5,20251110],"dap1":[1.332,20201120],"n020":[30.4,20251123]}],["El Estribo","EE06","Baja",{"mo":[2.27,20251110],"p":[67.57,20251110],"s":[126.4,20251110],"dap1":[1.34,20201120],"n020":[52.8,20251123]}],["El Estribo","EE06","Media",{"mo":[2.236,20201120],"dap1":[1.346,20201120],"p":[23.029,20201120]}],["El Estribo","EE07","Alta",{"mo":[2.39,20251110],"p":[49.55,20251110],"s":[164.7,20251110],"n020":[44.9,20251110],"n2060":[9.2,20231120]}],["El Estribo","EE07","Baja",{"mo":[2.65,20251110],"p":[60.42,20251110],"s":[134.7,20251110],"n020":[84.0,20251110],"n2060":[6.6,20231120]}],["El Estribo","EE08","Alta",{"mo":[2.39,20201120],"dap1":[1.224,20201120],"p":[26.8,20201120],"n020":[14.0,20231120],"n2060":[14.7,20231120],"n060":[70.0,20241114]}],["El Estribo","EE08","Baja",{"mo":[2.19,20201120],"dap1":[1.265,20201120],"p":[23.92,20201120],"n020":[6.0,20231120],"n2060":[11.3,20231120],"n060":[38.0,20241114]}],["El Estribo","EE08","Media",{"mo":[3.5,20201120],"dap1":[1.247,20201120],"p":[25.2,20201120]}],["El Estribo","EE09","Alta",{"mo":[3.0,20220901],"p":[35.0,20220901],"s":[9.5,20220901],"n060":[63.0,20241114]}],["El Estribo","EE09","Baja",{"mo":[2.61,20220901],"p":[33.0,20220901],"s":[8.2,20220901],"n060":[37.0,20241114]}],["El Estribo","EE10","Alta",{"mo":[2.6,20220901],"dap1":[0.61,20220901],"p":[26.0,20220901],"s":[8.0,20220901],"n020":[13.4,20231120],"n2060":[11.3,20231120],"n060":[56.0,20241114]}],["El Estribo","EE10","Baja",{"mo":[2.38,20220901],"dap1":[0.4,20220901],"p":[20.0,20220901],"s":[5.9,20220901],"n020":[10.3,20231120],"n2060":[10.0,20231120],"n060":[35.0,20241114]}],["Grintur","GT01","Alta",{"mo":[2.64,20251123],"p":[47.0,20220901],"s":[7.0,20220901],"n020":[56.4,20251123],"n2060":[29.1,20251123]}],["Grintur","GT01","Baja",{"mo":[2.21,20251123],"p":[59.0,20220901],"s":[11.2,20220901],"n020":[43.4,20251123],"n2060":[25.0,20251123]}],["Grintur","GT02","Alta",{"mo":[2.94,20190725],"p":[97.7,20170905],"s":[19.2,20170905],"n020":[5.7,20231120],"n2060":[16.2,20231120]}],["Grintur","GT02","Baja",{"mo":[2.97,20190725],"p":[88.5,20170905],"s":[14.5,20170905],"n020":[19.1,20231120],"n2060":[14.9,20231120]}],["Grintur","GT03","Alta",{"mo":[2.65,20220901],"dap1":[1.12,20201115],"p":[55.0,20220901],"s":[7.7,20220901],"n060":[21.0,20241114]}],["Grintur","GT03","Baja",{"mo":[2.84,20220901],"dap1":[1.21,20201115],"p":[61.0,20220901],"s":[7.7,20220901],"n060":[38.0,20241114]}],["Grintur","GT04","Alta",{"mo":[2.91,20201115],"dap1":[1.1,20201115],"p":[82.6,20201115],"s":[14.2,20201115],"n020":[15.7,20231120],"n2060":[18.4,20231120],"n060":[41.0,20241114]}],["Grintur","GT04","Baja",{"mo":[2.75,20201115],"dap1":[1.22,20201115],"p":[68.5,20201115],"s":[10.1,20201115],"n020":[10.7,20231120],"n2060":[9.5,20231120],"n060":[36.0,20241114]}],["Grintur","GT04","Pristino",{"mo":[3.02,20201115],"dap1":[1.09,20201115],"p":[91.1,20201115],"s":[15.3,20201115]}],["Leguizamón","RL01","Alta",{"n020":[15.4,20260703],"n2060":[12.0,20260703]}],["Leguizamón","RL01","Baja",{"n020":[12.4,20260703],"n2060":[9.3,20260703]}],["Marin","HM01","Alta",{"mo":[2.7,20251123],"p":[60.0,20220901],"s":[13.1,20220901],"n020":[46.5,20251123],"n2060":[26.3,20251123]}],["Marin","HM01","Baja",{"mo":[2.25,20251123],"p":[40.0,20220901],"s":[9.0,20220901],"n020":[25.5,20251123],"n2060":[13.8,20251123]}],["Marin","HM02","Alta",{"mo":[2.7,20251110],"p":[62.75,20251110],"s":[144.8,20251110],"n020":[53.6,20251123],"n2060":[53.2,20231120]}],["Marin","HM02","Baja",{"mo":[2.84,20251110],"p":[66.76,20251110],"s":[114.9,20251110],"n020":[22.9,20251123],"n2060":[24.3,20231120]}],["Marin","HM03","Alta",{"n060":[65.0,20241114],"mo":[2.43,20251110],"p":[38.6,20251110],"s":[151.7,20251110],"n020":[27.1,20251110]}],["Marin","HM03","Baja",{"n060":[32.0,20241114],"mo":[1.99,20251110],"p":[63.73,20251110],"s":[120.1,20251110],"n020":[17.3,20251110]}],["Miró","RM01","Alta",{"mo":[2.71,20251123],"p":[50.0,20221005],"s":[7.2,20221005],"n020":[11.1,20260703],"n2060":[5.5,20260703]}],["Miró","RM01","Baja",{"mo":[2.19,20251123],"p":[47.0,20221005],"s":[5.0,20221005],"n020":[4.6,20260703],"n2060":[2.8,20260703]}],["San Claudio","SC01","Alta",{"mo":[2.92,20251110],"dap1":[1.296,20191115],"p":[103.03,20251110],"s":[120.7,20251110],"n020":[36.9,20251110]}],["San Claudio","SC01","Baja",{"mo":[2.65,20251110],"dap1":[1.321,20191115],"p":[106.95,20251110],"s":[138.7,20251110],"n020":[46.2,20251110]}],["San Claudio","SC01","Media",{"mo":[2.682,20191115],"dap1":[1.248,20191115],"p":[43.338,20191115],"s":[10.413,20191115]}],["San Claudio","SC01 A","Alta",{"mo":[3.66,20221005],"p":[49.0,20221005],"s":[10.5,20221005]}],["San Claudio","SC01 B","Baja",{"mo":[2.41,20221005],"p":[28.0,20221005],"s":[7.1,20221005]}],["San Claudio","SC01 B","Media",{"mo":[3.1,20180606],"p":[65.3,20180606],"s":[20.1,20180606]}],["San Claudio","SC02","Alta",{"mo":[2.84,20251110],"dap1":[1.233,20191115],"p":[52.29,20251110],"s":[171.0,20251110],"n020":[11.9,20260703],"n2060":[5.7,20260703]}],["San Claudio","SC02","Baja",{"mo":[2.16,20251110],"dap1":[1.326,20191115],"p":[60.31,20251110],"s":[132.3,20251110],"n020":[17.2,20251110]}],["San Claudio","SC02","Media",{"mo":[2.966,20191115],"dap1":[1.154,20191115],"p":[54.32,20191115],"s":[12.975,20191115],"n020":[5.2,20260703],"n2060":[2.8,20260703]}],["San Claudio","SC02 A","Alta",{"mo":[2.5,20180606],"p":[65.7,20180606],"s":[16.9,20180606],"n020":[27.5,20231120],"n2060":[38.3,20231120]}],["San Claudio","SC02 B","Baja",{"mo":[2.18,20180606],"p":[65.5,20180606],"s":[14.1,20180606],"n020":[3.6,20231120],"n2060":[3.8,20231120]}],["San Claudio","SC03","Alta",{"mo":[2.94,20251110],"p":[94.91,20251110],"s":[250.0,20251110],"n020":[51.5,20251123]}],["San Claudio","SC03","Baja",{"mo":[3.02,20251110],"p":[60.37,20251110],"s":[123.8,20251110],"n020":[25.7,20251110]}],["San Claudio","SC04","Alta",{"mo":[2.59,20251110],"p":[69.59,20251110],"s":[136.7,20251110],"n020":[8.4,20260703],"n2060":[3.4,20260703]}],["San Claudio","SC04","Baja",{"mo":[2.68,20251110],"p":[93.98,20251110],"s":[132.5,20251110],"n020":[5.0,20260703],"n2060":[3.1,20260703]}],["San Claudio","SC05","Alta",{"mo":[3.04,20251110],"p":[33.71,20251110],"s":[158.6,20251110],"n020":[9.9,20260703],"n2060":[5.7,20260703]}],["San Claudio","SC05","Baja",{"mo":[2.52,20251110],"p":[53.07,20251110],"s":[148.5,20251110],"n020":[6.9,20260703],"n2060":[4.1,20260703]}],["San Claudio","SC05","Media",{"mo":[2.42,20251110],"p":[35.4,20251110],"s":[187.0,20251110]}],["San Claudio","SC06","Alta",{"mo":[3.07,20251110],"p":[82.19,20251110],"s":[183.5,20251110],"n020":[10.5,20260703],"n2060":[5.7,20260703]}],["San Claudio","SC06","Baja",{"mo":[2.84,20251110],"p":[66.36,20251110],"s":[141.0,20251110],"n020":[6.6,20260703],"n2060":[4.5,20260703]}],["San Claudio","SC07","Alta",{"n020":[11.6,20260703],"n2060":[6.9,20260703],"mo":[3.28,20251123]}],["San Claudio","SC07","Baja",{"n020":[5.3,20260703],"n2060":[3.1,20260703],"mo":[2.41,20251123]}]];
+
+/* ===================== FUENTES DE DATOS EN VIVO =========================
+   Tres planillas de Google, leídas por JSONP contra el endpoint gviz porque
+   el tablero se abre como archivo local y el navegador bloquea fetch cruzado.
+   Cada una tiene su propio estado, su ID editable y su copia embebida. */
+
+const FUENTES = {
+  rot: {id:'1-RsBaDYylj0vnJin_ceKY6f2CJHUBl6yF-8K2B5zXVE', hoja:'Rotación',
+        nombre:'SY - Planif_1.1', rotulo:'Rotación y lotes',
+        estado:{origen:'local', filas:0, hora:null, error:null}},
+  amb: {id:'1cEE59U9qzCfNMiz8UKDzlqDDrRVenQ3FOUetV4Zqh44', hoja:'Ambientes',
+        nombre:'SY_Ambientes', rotulo:'Zonas de manejo, hectáreas y densidad',
+        estado:{origen:'local', filas:0, hora:null, error:null}},
+  lab: {id:'1MPuTAJRNw-OP9A3qr2TKTW2ig-sDWk-X1kyraB3KSPA', hoja:'Hoja1',
+        nombre:'DS_Lab_1.3', rotulo:'Análisis de laboratorio',
+        estado:{origen:'local', filas:0, hora:null, error:null}}
+};
+const SNAPSHOT_FECHA = '25 de septiembre de 2026';
+
+/* Normaliza encabezados: sin acentos, sin puntuación, en minúsculas */
+const norm = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '')
+  .toLowerCase().replace(/[^a-z0-9]/g, '');
+
+/* Alias de columnas por fuente. El orden no importa y sobran las que no se usan. */
+const ALIAS = {
+  rot: {campo:['campo'], lote:['lote'], sup:['sup','supha','superficie'],
+        camp:['campana','campania'], oi:['otinv','oi','cultivoinvierno','otinvierno'],
+        pv:['primver','pv','cultivoverano']},
+  amb: {camp:['campana','campania'], cultivo:['cultivo'], campo:['campo'], lote:['lote'],
+        ambiente:['ambiente'], clase:['clase'], ha:['has','ha','hectareas'],
+        zm:['zonademanejo','zm'], ds:['dssemha','ds','dosisdesiembra']},
+  lab: {fecha:['fecha'], campo:['campo'], lote:['lote'], ambiente:['ambiente'],
+        prof:['profcm','prof','profundidad'], dap:['dap'], mo:['mo','mo%'],
+        nno3:['nno3kgha','nno3','nno3ppm'], p:['pppm','p'], s:['sppm','s']}
+};
+
+/* ---- Lectura JSONP genérica ---- */
+function gviz(key, cb){
+  const F = FUENTES[key];
+  const bruto = ($('src_' + key) && $('src_' + key).value.trim()) || F.id;
+  const hoja  = ($('hoja_' + key) && $('hoja_' + key).value.trim()) || F.hoja;
+  const m = bruto.match(/\/d\/([a-zA-Z0-9-_]{20,})/);
+  const id = m ? m[1] : bruto;
+  const fn = '__cb' + Math.random().toString(36).slice(2);
+  const s = document.createElement('script');
+  let listo = false;
+  const cerrar = () => { try { delete window[fn]; } catch(e){ window[fn] = undefined; } s.remove(); };
+  const t = setTimeout(() => { if (!listo){ listo = true; cerrar(); cb(null, 'la planilla no respondió'); } }, 25000);
+  window[fn] = resp => {
+    listo = true; clearTimeout(t); cerrar();
+    try { cb(parsear(key, resp), null); } catch(e){ cb(null, e.message); }
+  };
+  s.onerror = () => { if (!listo){ listo = true; clearTimeout(t); cerrar();
+    cb(null, 'no se pudo leer (¿está compartida con el enlace, y hay conexión?)'); } };
+  s.src = 'https://docs.google.com/spreadsheets/d/' + id + '/gviz/tq'
+        + '?tqx=' + encodeURIComponent('out:json;responseHandler:' + fn)
+        + '&sheet=' + encodeURIComponent(hoja) + '&headers=1';
+  document.head.appendChild(s);
+}
+
+/* gviz devuelve las fechas como "Date(2020,10,20)"; también puede venir el texto formateado */
+function fechaNum(c){
+  if (!c) return 0;
+  const v = c.v, f = c.f;
+  if (typeof v === 'string'){
+    const d = v.match(/Date\((\d+),(\d+),(\d+)/);
+    if (d) return (+d[1]) * 10000 + ((+d[2]) + 1) * 100 + (+d[3]);
+  }
+  const txt = String(f || v || '');
+  const p = txt.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+  if (p){ let a = +p[3]; if (a < 100) a += 2000; return a * 10000 + (+p[2]) * 100 + (+p[1]); }
+  return 0;
+}
+const fechaTxt = n => n ? String(n % 100).padStart(2,'0') + '/' + String(Math.floor(n/100)%100).padStart(2,'0')
+                          + '/' + Math.floor(n/10000) : '';
+
+function parsear(key, resp){
+  const tb = resp && resp.table;
+  if (!tb || !tb.cols) throw new Error('respuesta inesperada de la planilla');
+  const A = ALIAS[key], idx = {};
+  tb.cols.forEach((c, i) => {
+    const n = norm(c.label);
+    for (const k in A) if (A[k].includes(n) && idx[k] === undefined) idx[k] = i;
+  });
+  const req = key === 'rot' ? ['campo','lote','sup','camp','oi','pv']
+            : key === 'amb' ? ['camp','campo','lote','ambiente','ha','zm']
+            : ['fecha','campo','lote','ambiente','prof'];
+  for (const k of req) if (idx[k] === undefined) throw new Error('falta la columna "' + k + '"');
+
+  const val = c => (c == null ? '' : (c.v !== null && c.v !== undefined ? c.v : (c.f || '')));
+  const txt = c => String(val(c)).trim();
+  const nm  = c => { const v = val(c); if (v === '' || v === null) return null;
+                     const x = parseFloat(String(v).replace(',', '.')); return isFinite(x) ? x : null; };
+
+  const filas = (tb.rows || []).map(r => {
+    const c = r.c || [];
+    if (key === 'rot')
+      return [txt(c[idx.campo]), txt(c[idx.lote]), txt(c[idx.camp]),
+              Math.round(nm(c[idx.sup]) || 0), txt(c[idx.oi]), txt(c[idx.pv])];
+    if (key === 'amb')
+      return {camp:txt(c[idx.camp]), campo:txt(c[idx.campo]), lote:txt(c[idx.lote]),
+              amb:txt(c[idx.ambiente]), clase:nm(c[idx.clase]), ha:nm(c[idx.ha]) || 0,
+              zm:txt(c[idx.zm]), ds:nm(c[idx.ds])};
+    return {fecha:fechaNum(c[idx.fecha]), campo:txt(c[idx.campo]), lote:txt(c[idx.lote]),
+            amb:txt(c[idx.ambiente]), prof:norm(txt(c[idx.prof])),
+            dap:nm(c[idx.dap]), mo:nm(c[idx.mo]), nno3:nm(c[idx.nno3]),
+            p:nm(c[idx.p]), s:nm(c[idx.s])};
+  }).filter(r => key === 'rot' ? (r[0] && r[1] && r[2]) : (r.campo && r.lote));
+  if (!filas.length) throw new Error('la hoja no devolvió filas');
+  return filas;
+}
+
+/* ================== ÍNDICE DE ZONAS DE MANEJO (SY_Ambientes) ============== */
+let AMB = {};                       // "campaña|campo|lote" -> [zonas]
+
+/* Nombres de zona de manejo: la planilla usa forma larga en 24-25 y corta en 26-27 */
+const CANON_ZM = {bajopotencial:'Bajo Potencial', bajo:'Bajo Potencial',
+  muybajopotencial:'Muy Bajo Potencial', muybajo:'Muy Bajo Potencial',
+  mediopotencial:'Medio Potencial', medio:'Medio Potencial',
+  altopotencial:'Alto Potencial', alto:'Alto Potencial',
+  muyaltopotencial:'Muy Alto Potencial', muyalto:'Muy Alto Potencial',
+  dosisfija:'Dosis Fija'};
+const canonZM = s => CANON_ZM[norm(s)] || String(s || '').trim();
+const ORDEN_ZM = ['muybajopotencial','bajopotencial','mediopotencial','altopotencial',
+                  'muyaltopotencial','dosisfija'];
+
+/* Filas crudas de la planilla -> formato de snapshot [camp,campo,lote,zm,ha,ds,ambs] */
+function agregarAMB(raw){
+  const g = {};
+  raw.forEach(r => {
+    const zm = canonZM(r.zm); if (!zm || !r.camp) return;
+    const k = [r.camp, r.campo, r.lote, zm].join('\u0001');
+    const o = (g[k] = g[k] || {ha:0, dsA:0, dsH:0, ambs:{}});
+    o.ha += r.ha;
+    if (r.ds){ o.dsA += r.ds * r.ha; o.dsH += r.ha; }
+    const a = (r.amb || '').trim();
+    if (a && a !== '-') o.ambs[a] = (o.ambs[a] || 0) + r.ha;
+  });
+  return Object.entries(g).map(([k, o]) => {
+    const [camp, campo, lote, zm] = k.split('\u0001');
+    const ambs = Object.entries(o.ambs).sort((x, y) => y[1] - x[1])
+      .map(([a, ha]) => a + ':' + Math.round(ha * 10) / 10).join('|');
+    return [camp, campo, lote, zm, Math.round(o.ha * 10) / 10,
+            o.dsH > 0 ? Math.round(o.dsA / o.dsH / 500) * 500 : 0, ambs];
+  });
+}
+
+/* Snapshot -> índice "campaña|campo|lote" -> [zonas ordenadas por potencial] */
+/* Zonas de un lote para una campaña; si esa campaña no tiene mapa de ambientes,
+   cae a la más reciente que sí lo tenga. Los mapas no se rehacen todos los años. */
+function zonasDe(camp, campo, lote){
+  const directo = AMB[camp + '|' + campo + '|' + lote];
+  if (directo && directo.length) return {zonas: directo, camp};
+  const cands = Object.keys(AMB)
+    .filter(k => k.endsWith('|' + campo + '|' + lote))
+    .map(k => k.split('|')[0])
+    .sort().reverse();
+  const c = cands.find(x => x <= camp) || cands[0];
+  return c ? {zonas: AMB[c + '|' + campo + '|' + lote], camp: c} : null;
+}
+
+function construirAMB(rows){
+  const ix = {};
+  rows.forEach(([camp, campo, lote, zm, ha, ds, ambs]) => {
+    const k = camp + '|' + campo + '|' + lote;
+    (ix[k] = ix[k] || []).push({
+      zm, ha, ds: ds || null,
+      ambs: (ambs || '').split('|').filter(Boolean).map(t => {
+        const i = t.lastIndexOf(':');
+        return {amb: t.slice(0, i), ha: parseFloat(t.slice(i + 1)) || 0};
+      })
+    });
+  });
+  Object.values(ix).forEach(a => a.sort((x, y) => {
+    const ix1 = ORDEN_ZM.indexOf(norm(x.zm)), iy = ORDEN_ZM.indexOf(norm(y.zm));
+    return (ix1 < 0 ? 99 : ix1) - (iy < 0 ? 99 : iy) || x.zm.localeCompare(y.zm);
+  }));
+  return ix;
+}
+
+/* ===================== ÍNDICE DE LABORATORIO (DS_Lab) ==================== */
+let LAB = {};                       // "campo|lote|ambiente" -> {mo:{v,f}, n020:{v,f}, ...}
+
+/* Un estrato informado como 20-40 se toma como 20-60; 0-60 es una muestra única */
+const estrato = p => p === '020' ? '020'
+                   : (p === '2060' || p === '2040') ? '2060'
+                   : p === '060' ? '060' : null;
+
+/* Filas crudas -> formato de snapshot [campo, lote, ambiente, {var:[valor, fecha]}] */
+function agregarLAB(raw){
+  const ix = {};
+  const poner = (o, k, v, f) => {
+    if (v === null || v === undefined || v === '') return;
+    if (!o[k] || f > o[k][1]) o[k] = [Math.round(v * 1000) / 1000, f];
+  };
+  raw.forEach(r => {
+    const amb = (r.amb || '').trim();
+    if (!amb || amb === '-' || norm(amb) === 'sambientar') return;
+    const e = estrato(r.prof); if (!e) return;
+    const k = [r.campo, r.lote, amb].join('\u0001');
+    const o = (ix[k] = ix[k] || {});
+    if (e === '020'){
+      poner(o, 'mo', r.mo, r.fecha);  poner(o, 'dap1', r.dap, r.fecha);
+      poner(o, 'p',  r.p,  r.fecha);  poner(o, 's',    r.s,   r.fecha);
+      poner(o, 'n020', r.nno3, r.fecha);
+    } else if (e === '2060'){
+      poner(o, 'n2060', r.nno3, r.fecha); poner(o, 'dap2', r.dap, r.fecha);
+      poner(o, 'mo', r.mo, r.fecha);
+    } else {
+      poner(o, 'n060', r.nno3, r.fecha);
+    }
+  });
+  return Object.entries(ix).map(([k, o]) => { const p = k.split('\u0001'); return [p[0], p[1], p[2], o]; });
+}
+
+function construirLAB(rows){
+  const ix = {};
+  rows.forEach(([campo, lote, amb, o]) => {
+    const d = {};
+    Object.entries(o).forEach(([k, par]) => { d[k] = {v: par[0], f: par[1]}; });
+    ix[campo + '|' + lote + '|' + amb] = d;
+  });
+  return ix;
+}
+
+/* Orden de ambientes: si falta el exacto, se busca el vecino más parecido */
+const RANK_AMB = {muybaja:0, baja:1, media:2, alta:3, muyalta:4};
+const rankAmb = a => RANK_AMB[norm(a)] ?? 2;
+
+/* Valor de una variable para campo|lote|ambiente, con cadena de suplencia:
+   1) el propio lote y ambiente
+   2) el ambiente vecino dentro del mismo lote
+   3) el mismo ambiente (o el más cercano) en otro lote del campo
+   4) el promedio del campo */
+function labValor(campo, lote, amb, cv){
+  const propio = LAB[campo + '|' + lote + '|' + amb];
+  if (propio && propio[cv]) return {...propio[cv], origen:'propio'};
+
+  const r0 = rankAmb(amb);
+  let mejor = null, mejorD = 99;
+  Object.entries(LAB).forEach(([k, o]) => {
+    const p = k.split('|');
+    if (p[0] !== campo || !o[cv]) return;
+    const d = Math.abs(rankAmb(p[2]) - r0) + (p[1] === lote ? 0 : 0.5);
+    if (d < mejorD || (d === mejorD && mejor && o[cv].f > mejor.f)){
+      mejorD = d;
+      mejor = {...o[cv], origen: (p[1] === lote ? 'ambiente ' : '') + p[2] + (p[1] === lote ? ' del lote' : ' de ' + p[1])};
+    }
+  });
+  if (mejor) return mejor;
+
+  let acc = 0, n = 0, fm = 0;
+  Object.entries(LAB).forEach(([k, o]) => {
+    if (k.split('|')[0] !== campo || !o[cv]) return;
+    acc += o[cv].v; n++; fm = Math.max(fm, o[cv].f);
+  });
+  return n ? {v: acc / n, f: fm, origen:'promedio de ' + campo} : null;
+}
+
+/* Valor de una zona de manejo: promedio ponderado por hectárea de los
+   ambientes que la componen. */
+function labZona(campo, lote, ambs, campoVar){
+  let acc = 0, ha = 0, fm = 0;
+  const sup = [];
+  (ambs || []).forEach(a => {
+    const r = labValor(campo, lote, a.amb, campoVar);
+    if (!r) return;
+    acc += r.v * a.ha; ha += a.ha; fm = Math.max(fm, r.f);
+    if (r.origen !== 'propio') sup.push(r.origen);
+  });
+  if (ha <= 0) return null;
+  return {v: acc / ha, f: fm,
+          origen: sup.length ? [...new Set(sup)].join(' · ') : 'propio'};
+}
 
 /* ---- Origen de datos: planilla de planificación de Suri Yaco ---- */
 const SY_FUENTE = {
@@ -718,93 +1036,61 @@ function construirSY(rows){
   return {lotes: Object.values(campos), campanas: [...campanas].sort()};
 }
 let SY = construirSY(SY_ROWS);
-let SY_ESTADO = {origen: 'local', filas: SY_ROWS.length, hora: null, error: null};
 
 /* ---- Lectura en vivo de la planilla (JSONP sobre el endpoint gviz de Google) ----
    Se usa JSONP y no fetch porque el tablero se abre como archivo local: el navegador
    bloquearía una petición cruzada normal. Requiere que la planilla esté compartida
    como "cualquiera con el enlace puede ver". Si falla, queda la copia embebida. */
-function syDescargar(cb){
-  const id = ($('syId') && $('syId').value.trim()) || SY_FUENTE.id;
-  const hoja = ($('syHoja') && $('syHoja').value.trim()) || SY_FUENTE.hoja;
-  const m = id.match(/\/d\/([a-zA-Z0-9-_]{20,})/);        // acepta pegar la URL completa
-  const sheetId = m ? m[1] : id;
-  const fn = '__syCB' + Math.random().toString(36).slice(2);
-  const url = 'https://docs.google.com/spreadsheets/d/' + sheetId + '/gviz/tq'
-    + '?tqx=' + encodeURIComponent('out:json;responseHandler:' + fn)
-    + '&sheet=' + encodeURIComponent(hoja) + '&headers=1';
-  const s = document.createElement('script');
-  let listo = false;
-  const cerrar = () => { try { delete window[fn]; } catch(e){ window[fn] = undefined; } s.remove(); };
-  const t = setTimeout(() => { if (!listo){ listo = true; cerrar(); cb(null, 'la planilla no respondió'); } }, 20000);
-  window[fn] = resp => {
-    listo = true; clearTimeout(t); cerrar();
-    try { cb(syParsear(resp), null); } catch(e){ cb(null, e.message); }
-  };
-  s.onerror = () => { if (!listo){ listo = true; clearTimeout(t); cerrar();
-    cb(null, 'no se pudo leer la planilla (¿está compartida con el enlace, y hay conexión?)'); } };
-  s.src = url;
-  document.head.appendChild(s);
-}
-
-/* Normaliza encabezados: sin acentos, sin puntuación, en minúsculas */
-const norm = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-  .toLowerCase().replace(/[^a-z0-9]/g, '');
-
-function syParsear(resp){
-  const tb = resp && resp.table;
-  if (!tb || !tb.cols) throw new Error('respuesta inesperada de la planilla');
-  const ALIAS = {campo:['campo'], lote:['lote'], sup:['sup','supha','superficie'],
-                 camp:['campana','campania'], oi:['otinv','oi','cultivoinvierno','otinvierno'],
-                 pv:['primver','pv','cultivoverano']};
-  const idx = {};
-  tb.cols.forEach((c, i) => {
-    const n = norm(c.label);
-    for (const k in ALIAS) if (ALIAS[k].includes(n) && idx[k] === undefined) idx[k] = i;
-  });
-  for (const k of ['campo','lote','sup','camp','oi','pv'])
-    if (idx[k] === undefined) throw new Error('falta la columna "' + k + '" en la hoja');
-  const val = c => (c == null ? '' : (c.v !== null && c.v !== undefined ? c.v : (c.f || '')));
-  const rows = (tb.rows || []).map(r => {
-    const c = r.c || [];
-    return [String(val(c[idx.campo])).trim(), String(val(c[idx.lote])).trim(),
-            String(val(c[idx.camp])).trim(), Math.round(parseFloat(val(c[idx.sup])) || 0),
-            String(val(c[idx.oi])).trim(), String(val(c[idx.pv])).trim()];
-  }).filter(r => r[0] && r[1] && r[2]);
-  if (!rows.length) throw new Error('la hoja no devolvió filas');
-  return rows;
-}
-
-function syEstadoHTML(){
-  const e = SY_ESTADO;
-  if (e.origen === 'cargando')
-    return '<span class="pill gris">leyendo la planilla…</span>';
+function estadoFuenteHTML(key){
+  const F = FUENTES[key], e = F.estado;
+  if (e.origen === 'cargando') return '<span class="pill gris">leyendo…</span>';
   if (e.origen === 'sheet')
-    return `<span class="pill baja">planilla en vivo</span> <span style="color:var(--muted)">`
-      + `${fmt(e.filas)} filas · ${esc(SY_FUENTE.nombre)} · hoja ${esc(SY_FUENTE.hoja)} · leída ${esc(e.hora)}</span>`;
+    return `<span class="pill baja">en vivo</span> <span style="color:var(--muted)">`
+      + `${fmt(e.filas)} filas · ${esc(F.nombre)} · ${esc(e.hora)}</span>`;
   return `<span class="pill media">copia local</span> <span style="color:var(--muted)">`
-    + `${fmt(e.filas)} filas · exportadas el ${SY_FUENTE.snapshot}`
-    + (e.error ? ` · ${esc(e.error)}` : '') + `</span>`;
-}
-function syActualizar(auto){
-  SY_ESTADO.origen = 'cargando'; SY_ESTADO.error = null;
-  const b = $('syEstado'); if (b) b.innerHTML = syEstadoHTML();
-  syDescargar((rows, err) => {
-    if (rows){
-      SY_ROWS = rows; SY = construirSY(rows);
-      SY_ESTADO = {origen:'sheet', filas: rows.length, error: null,
-                   hora: new Date().toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'})};
-      initCatalogo();
-    } else {
-      SY = construirSY(SY_ROWS);
-      SY_ESTADO = {origen:'local', filas: SY_ROWS.length, hora: null, error: err};
-      if (!auto) initCatalogo();
-    }
-    const c = $('syEstado'); if (c) c.innerHTML = syEstadoHTML();
-  });
+    + `${fmt(e.filas)} filas · ${SNAPSHOT_FECHA}` + (e.error ? ` · ${esc(e.error)}` : '') + `</span>`;
 }
 
-/* El antecesor del maíz de primavera-verano: el cultivo de invierno de la misma campaña;
+function renderFuentes(){
+  const box = $('fuentesBox'); if (!box) return;
+  box.innerHTML = `<div style="border:1px solid var(--line);border-radius:11px;background:var(--soft);overflow:hidden">`
+    + Object.keys(FUENTES).map((k, i) => `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+        padding:8px 12px;font-size:12.5px;${i ? 'border-top:1px solid var(--line)' : ''}">
+        <b style="min-width:210px">${esc(FUENTES[k].rotulo)}</b>
+        <span id="est_${k}">${estadoFuenteHTML(k)}</span>
+        <span style="flex:1"></span>
+        <button class="btn sm" onclick="actualizarFuente('${k}', false)">Actualizar</button>
+      </div>`).join('')
+    + `<div style="display:flex;gap:8px;padding:8px 12px;border-top:1px solid var(--line);justify-content:flex-end">
+        <button class="btn ghost sm" onclick="document.getElementById('syOrigen').open=!document.getElementById('syOrigen').open">Origen de datos</button>
+        <button class="btn sm" onclick="actualizarTodo()">Actualizar las tres</button>
+      </div></div>`;
+}
+
+function actualizarFuente(key, auto){
+  const F = FUENTES[key];
+  F.estado = {origen:'cargando', filas: F.estado.filas, hora: null, error: null};
+  const c = $('est_' + key); if (c) c.innerHTML = estadoFuenteHTML(key);
+  gviz(key, (raw, err) => {
+    if (raw){
+      if (key === 'rot'){ SY_ROWS = raw; SY = construirSY(raw); initCatalogo(); }
+      if (key === 'amb'){ AMB_ROWS = agregarAMB(raw); AMB = construirAMB(AMB_ROWS); }
+      if (key === 'lab'){ LAB_ROWS = agregarLAB(raw); LAB = construirLAB(LAB_ROWS); }
+      F.estado = {origen:'sheet', filas: raw.length, error: null,
+                  hora: new Date().toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'})};
+    } else {
+      F.estado = {origen:'local',
+                  filas: key === 'rot' ? SY_ROWS.length : key === 'amb' ? AMB_ROWS.length : LAB_ROWS.length,
+                  hora: null, error: err};
+    }
+    const d = $('est_' + key); if (d) d.innerHTML = estadoFuenteHTML(key);
+    if (!auto) avisar(raw ? `${FUENTES[key].rotulo}: ${raw.length} filas leídas de la planilla.`
+                          : `${FUENTES[key].rotulo}: ${err}. Sigo con la copia local.`);
+  });
+}
+function actualizarTodo(){ Object.keys(FUENTES).forEach(k => actualizarFuente(k, true)); }
+
+/* El antecesor del maíz de primavera-verano:/* El antecesor del maíz de primavera-verano: el cultivo de invierno de la misma campaña;
    si el invierno fue barbecho químico, el antecesor real es el cultivo de verano anterior. */
 function antecesorDe(l, camp){
   const h = l.hist[camp]; if (!h) return {key:'barbecho', origen:'sin datos'};
@@ -883,6 +1169,28 @@ ${L('Las opciones')}
 </ul>
 ${L('Efecto práctico')}
 <p>Cuanto más alta la meseta, más alto sale el óptimo económico y más plana queda la curva alrededor del óptimo, o sea menos castigo por errarle a la dosis.</p>`},
+
+prorrateo: {t:'Reparto del N-NO₃ entre estratos', c:
+`<p>El balance y el umbral necesitan el nitrato de <b>0 a 60 cm</b> separado en dos estratos. El laboratorio no siempre lo entrega así, y este parámetro decide cómo completar lo que falta.</p>
+${L('Los dos casos que resuelve')}
+<ul><li>El análisis vino como <b>una sola muestra de 0-60</b>: se reparte entre los dos estratos con este porcentaje.</li>
+<li>Sólo se midió el <b>0-20</b>: se estima el 20-60 con la misma proporción, si el segundo selector está en Sí.</li></ul>
+${L('De dónde sale el 60 %')}
+<p>De los <b>40 muestreos de Suri Yaco que tienen los dos estratos medidos</b>: el de 0 a 20 cm concentra el 60 % del nitrato de 0 a 60 —60,4 % ponderado por kilos, mediana 62 %—. El rango entre cuartiles va de 50 a 65 %, con extremos de 26 a 93 %.</p>
+${L('Cuánto pesa en el resultado')}
+<p>Repartir una muestra de 0-60 <b>no cambia nada</b> en el balance ni en el umbral: los dos estratos suman el mismo total. Sólo importa en modo ppm, donde cada estrato se convierte con su propia densidad.</p>
+<p>Estimar el 20-60 cuando falta <b>sí cambia el resultado</b>, y bastante: agrega dos tercios más de N al suelo. Sin esa estimación, un lote donde sólo se midió el superficial queda con la oferta subestimada y el tablero pide fertilizante de más. Con ella, estás confiando en una proporción promedio. Las zonas afectadas quedan marcadas con un chip en la tarjeta del lote.</p>
+${L('Cuándo moverlo')}
+<p>Bajá el porcentaje si tu perfil concentra nitrato en profundidad —barbechos largos con lluvias que lavaron el superficial—. Subilo después de una mineralización fuerte y seca, donde el nitrato queda arriba.</p>`},
+
+unidadN: {t:'Unidad del N-NO₃ del laboratorio', c:
+`<p>Cómo informa el laboratorio los nitratos. Cambia la forma de llegar al <b>N-NO₃ de 0 a 60 cm</b>, que es lo que usan el balance y el umbral.</p>
+${L('kg/ha por estrato')}
+<p>El laboratorio ya hizo la conversión. El tablero <b>suma directo</b>: <code>0–20 + 20–60</code>. Es el formato de la planilla de muestreos de Suri Yaco, donde la columna Prof (cm) indica el estrato de cada fila. Un estrato informado como <b>20–40 se toma como 20–60</b>.</p>
+${L('ppm')}
+<p>El tablero convierte con <code>kg/ha = ppm × densidad aparente × espesor ÷ 10</code>. Acá la densidad aparente de cada estrato pesa de verdad sobre el resultado.</p>
+${L('Ojo')}
+<p>La densidad aparente se sigue usando en los dos modos para estimar la masa de suelo de 0 a 20 cm y con eso la mineralización, así que conviene cargarla igual aunque el N venga en kg/ha.</p>`},
 
 dap: {t:'Densidad aparente · g/cm³', c:
 `<p>La masa de suelo seco por unidad de volumen. Es lo que convierte una concentración del laboratorio (ppm) en kilos por hectárea: <b>kg/ha = ppm × densidad × espesor en cm ÷ 10</b>.</p>
@@ -985,7 +1293,7 @@ pS: {t:'Costo del azufre · US$/kg S', c:
 ${L('Para qué está')}
 <p>Para que la comparación entre fuentes nitrogenadas sea justa. Si usás urea vas a necesitar un producto azufrado aparte y eso cuesta plata; si usás Solmix, no. Sin cargar ese costo, las fuentes con azufre parecen más caras de lo que son.</p>`},
 
-descArr: {t:'Descontar el N del arrancador', c:
+descArr_: {t:'Descontar el N del arrancador', c:
 `<p>El MAP (11-52-0) y el DAP (18-46-0) aportan nitrógeno además de fósforo. Si activás el descuento, ese N se resta de la dosis nitrogenada, que es lo correcto: ya está en el lote.</p>
 ${L('Cuánto es')}
 <p>Nada despreciable. Una dosis de 56 kg de P₂O₅/ha con MAP son 108 kg de producto y <b>12 kg de N/ha</b>. Con superfosfato triple, que no tiene N, el descuento es cero.</p>`},
@@ -1065,6 +1373,9 @@ function leerParams(){
   P.coef      = num($('p_coef').value);
   P.eur       = num($('p_eur').value) / 100;
   P.base      = $('p_base').value;
+  P.unidadN   = $('p_unidadN').value;
+  P.prorr     = clamp(num($('p_prorr').value) / 100, 0.05, 0.95);
+  P.estim2060 = $('p_estim2060').value === '1';
   P.dap1      = num($('p_dap1').value);
   P.dap2      = num($('p_dap2').value);
   P.fNMO      = num($('p_fNMO').value);
@@ -1076,7 +1387,7 @@ function leerParams(){
   P.pfertN    = num($('p_pfertN').value);
   P.fuenteP   = $('p_fuenteP').value;
   P.pfertP    = num($('p_pfertP').value);
-  P.descArr   = $('p_descArr').value === '1';
+  P.descArr   = true;      // el N del arrancador siempre se descuenta de la dosis
   P.umbP      = num($('p_umbP').value);
   P.extP      = num($('p_extP').value);
   P.fRepP     = num($('p_fRepP').value);
@@ -1102,7 +1413,7 @@ function leerParams(){
   $('p_sFuenteN').value = fn.s;
   P.pctPn = fp.n;  P.pctPp = fp.p;
   P.pN = P.pfertN / 1000 / (fn.n / 100);          // US$ por kg de N
-  P.pP = P.pfertP / 1000 / (fp.p / 100);          // US$ por kg de P2O5
+  P.pP = fp.p > 0 ? P.pfertP / 1000 / (fp.p / 100) : 0;   // US$ por kg de P2O5
   P.pg = P.pgrano / 1000;                          // US$ por kg de grano
   P.RP = P.pg > 0 ? P.pN / P.pg : 0;               // kg de grano por kg de N
 
@@ -1122,7 +1433,11 @@ function calcZona(z, lote){
   const dap2 = num(z.dap2) || P.dap2;
 
   /* --- Oferta --- */
-  r.Ns   = 2 * num(z.n020) * dap1 + 4 * num(z.n2060) * dap2;      // kg N/ha 0-60
+  /* N-NO₃ 0-60. Si el laboratorio informa kg/ha por estrato se suman directo;
+     si informa ppm, se convierte con la densidad aparente y el espesor. */
+  r.Ns = P.unidadN === 'kgha'
+    ? num(z.n020) + num(z.n2060)
+    : 2 * num(z.n020) * dap1 + 4 * num(z.n2060) * dap2;
   const masa020 = 2e6 * dap1;                                     // kg suelo/ha 0-20
   const Norg    = masa020 * (num(z.mo) / 100) * P.fNMO;
   const kmin    = P.kmin * (lote.fecha === 'tardio' ? P.fTardio : 1);
@@ -1139,9 +1454,9 @@ function calcZona(z, lote){
   let p2o5 = r.Y * P.extP * P.fRepP;
   if (pB < P.umbP) p2o5 += (P.umbP - pB) * P.kBuild * P.fCorrP;
   r.P2O5 = Math.max(0, p2o5);
-  r.kgArr = P.pctPp > 0 ? r.P2O5 / (P.pctPp / 100) : 0;
+  r.kgArr = P.pctPp > 0 ? r.P2O5 / (P.pctPp / 100) : 0;   // 0 si la fuente es "Ninguno"
   r.Narr  = r.kgArr * (P.pctPn / 100);
-  r.costoP = r.P2O5 * P.pP;
+  r.costoP = r.kgArr * (P.pfertP / 1000);
   r.pAlerta = pB < P.umbP;
 
   /* --- Azufre --- */
@@ -1282,6 +1597,7 @@ function pondDs(l){
 }
 
 /* ============================ RENDER: LOTES ============================== */
+const uniN = () => (P.unidadN === 'ppm' ? 'ppm' : 'kg/ha');
 const FILAS = [
   ['grp', 'Zona de manejo'],
   ['nombre','Nombre de la zona','text'],
@@ -1289,8 +1605,8 @@ const FILAS = [
   ['y',    'Rinde objetivo · tn/ha', 'num', 0.1],
   ['ds',   'Dosis de siembra · semillas/ha', 'num', 1000],
   ['grp',  'Análisis de suelo — nitrógeno'],
-  ['n020', 'N-NO₃ 0–20 cm · ppm', 'num', 0.1],
-  ['n2060','N-NO₃ 20–60 cm · ppm', 'num', 0.1],
+  ['n020', () => 'N-NO₃ 0–20 cm · ' + uniN(), 'num', 0.1],
+  ['n2060',() => 'N-NO₃ 20–60 cm · ' + uniN(), 'num', 0.1],
   ['mo',   'Materia orgánica 0–20 · %', 'num', 0.1],
   ['dap1', 'Densidad aparente 0–20 · g/cm³', 'num', 0.01],
   ['dap2', 'Densidad aparente 20–60 · g/cm³', 'num', 0.01],
@@ -1298,6 +1614,19 @@ const FILAS = [
   ['p',    'P Bray-1 · ppm', 'num', 0.1],
   ['s',    'S-SO₄ · ppm', 'num', 0.1]
 ];
+
+/* Chip con la fecha del análisis usado y, si hubo suplencia, de dónde salió */
+function labChip(l){
+  const fs = l.zonas.map(z => z.labFecha || 0).filter(Boolean);
+  if (!fs.length) return '';
+  const f = Math.max(...fs);
+  const sup = [...new Set(l.zonas.map(z => z.labOrigen).filter(o => o && o !== 'propio'))];
+  const rep = [...new Set(l.zonas.map(z => z.repartoN).filter(Boolean))];
+  const col = sup.length ? '#fdf3e0' : '#eaf7ec', tc = sup.length ? '#96690c' : '#2E7D32';
+  return `<span class="chip" style="background:${col};color:${tc}" title="${sup.length
+    ? 'Sin análisis propio en alguna zona; se usó: ' + esc(sup.join(' · '))
+    : 'Análisis propio del lote'}${rep.length ? ' — ' + esc(rep.join(' ')) : ''}">lab ${fechaTxt(f)}${sup.length ? ' · suplido' : ''}${rep.length ? ' · N repartido' : ''}</span>`;
+}
 
 function renderLotes(){
   const c = $('lotesCont');
@@ -1313,15 +1642,16 @@ function renderLotes(){
 
     const cols = l.zonas.map((z, zi) => `<th>Zona ${zi + 1}</th>`).join('');
     const filas = FILAS.map(f => {
+      const etiq = typeof f[1] === 'function' ? f[1]() : f[1];
       if (f[0] === 'grp')
-        return `<tr class="grp"><td colspan="${l.zonas.length + 1}">${f[1]}</td></tr>`;
+        return `<tr class="grp"><td colspan="${l.zonas.length + 1}">${etiq}</td></tr>`;
       const celdas = l.zonas.map((z, zi) => {
         const v = z[f[0]] ?? '';
         return f[2] === 'text'
           ? `<td><input class="zname" value="${esc(v)}" oninput="setZ(${li},${zi},'${f[0]}',this.value)"></td>`
           : `<td><input type="number" step="${f[3]}" value="${v}" oninput="setZ(${li},${zi},'${f[0]}',this.value)"></td>`;
       }).join('');
-      return `<tr><td class="rowlab">${f[1]}</td>${celdas}</tr>`;
+      return `<tr><td class="rowlab">${etiq}</td>${celdas}</tr>`;
     }).join('');
 
     return `<div class="lote">
@@ -1337,6 +1667,8 @@ function renderLotes(){
         <span class="sp"></span>
         <span class="chip">${fmt(ha,1)} ha · ${l.zonas.length} zona${l.zonas.length > 1 ? 's' : ''}</span>
         ${l.nota ? `<span class="chip" style="background:#f5f0fa;color:var(--muted);font-weight:600" title="Rotación: ${esc(l.hist || '')}">antecesor: ${esc(l.nota)}</span>` : ''}
+        ${l.fuenteZonas ? `<span class="chip" style="background:#f5f0fa;color:var(--muted);font-weight:600">${esc(l.fuenteZonas)}</span>` : ''}
+        ${labChip(l)}
         <button class="btn ghost sm" onclick="delLote(${li})">Eliminar lote</button>
       </div>
       <div class="tscroll"><table class="ztable">
@@ -1344,6 +1676,9 @@ function renderLotes(){
         <tbody>${filas}</tbody>
       </table></div>
       <div class="lote-foot">
+        <button class="btn sm" onclick="traerLab(${li})" title="Completa el análisis de suelo de cada zona con el dato más reciente de la planilla de laboratorio. Reemplaza lo que haya cargado.">Traer laboratorio</button>
+        <button class="btn sm" onclick="copiarAnterior(${li})"${li === 0 ? ' disabled style="opacity:.45;cursor:not-allowed"' : ''} title="Completa sólo los campos vacíos con el valor del mismo campo en la tarjeta del lote anterior.">Copiar lo vacío del lote anterior</button>
+        <span style="flex:1"></span>
         <button class="btn sm" onclick="addZona(${li})"${l.zonas.length >= 4 ? ' disabled style="opacity:.45;cursor:not-allowed"' : ''}>+ Agregar zona</button>
         ${l.zonas.length > 1 ? `<button class="btn ghost sm" onclick="delZona(${li})">− Quitar última zona</button>` : ''}
         <span class="help" style="margin-left:4px">${l.zonas.length >= 4 ? 'Máximo de 4 zonas por lote alcanzado.' : ''}</span>
@@ -1396,7 +1731,7 @@ function renderResultados(R){
     <th>Lote</th><th>Zona</th><th>ha</th><th>Rinde obj.<br>tn/ha</th>
     <th>N-NO₃ 0-60<br>kg/ha</th><th>Mineraliz.<br>kg/ha</th><th>Antecesor<br>kg/ha</th>
     <th>Oferta<br>kg N/ha</th><th>Demanda<br>kg N/ha</th><th>Respuesta<br>esperada</th>
-    <th>Umbral<br>kg N/ha</th><th>Balance<br>kg N/ha</th><th>g N/pl<br>kg N/ha</th><th>Económica<br>kg N/ha</th>
+    <th>Umbral${P.incMinUmb ? ' <span style="font-weight:600;opacity:.75">+min</span>' : ''}<br>kg N/ha</th><th>Balance<br>kg N/ha</th><th>g N/pl<br>kg N/ha</th><th>Económica<br>kg N/ha</th>
     <th>Dosis a<br>aplicar</th><th>Semillas<br>/ha</th><th>g N ferti<br>/pl</th><th>g N s+f<br>/pl</th>
     <th>Producto<br>kg/ha</th><th>Rinde esp.<br>tn/ha</th>
     <th>Costo N<br>US$/ha</th><th>Margen N<br>US$/ha</th><th>P₂O₅<br>kg/ha</th><th>S total<br>kg/ha</th><th>S de la<br>fuente N</th><th>S a<br>agregar</th>
@@ -1483,6 +1818,10 @@ function renderResultados(R){
   $('notaTabla').innerHTML = `La columna <b>Dosis a aplicar</b> arranca en el óptimo económico (${nAuto} de ${nTot} zonas en automático) `
     + `y es editable zona por zona. El rinde esperado, el costo y el margen se recalculan sobre la curva de respuesta de cada zona. `
     + `Relación de precios vigente: <b>${fmt(P.RP,1)} kg de grano por kg de N</b> — cada kg de N necesita esa respuesta marginal para pagarse.`
+    + `<br>El criterio de <b>umbral</b> está computando `
+    + (P.incMinUmb
+        ? `el N-NO₃ 0–60 <b>más la mineralización estimada</b> como N disponible del suelo.`
+        : `<b>sólo el N-NO₃ 0–60</b> como N disponible del suelo, que es el modelo clásico. La mineralización sigue contando en la Oferta y por lo tanto en el balance: ese selector no la apaga, sólo decide si entra o no en el umbral.`)
     + `<br>Tipo de año <b>${BANDAS[P.tipoAno].nom.toLowerCase()}</b> (${BANDAS[P.tipoAno].mm} entre siembra y madurez fisiológica): `
     + `la banda objetivo es <b>${fmt(P.banda[0],2)}–${fmt(P.banda[1],2)} g de N por planta</b> contando suelo más fertilizante. `
     + `Verde = dentro de la banda; ámbar = el N limita; gris = por encima, sin respuesta esperada.`
@@ -1837,8 +2176,9 @@ function labEjemplo(){
       const t = (yMax > yMin) ? (num(z.y) - yMin) / (yMax - yMin) : 0.5;   // 0 = peor ambiente
       const v = (a, b, d) => String(Math.round((a + (b - a) * t) * Math.pow(10, d)) / Math.pow(10, d));
       if (z.ds    === '') z.ds    = String(Math.round((52000 + 12000 * t) / 500) * 500);
-      if (z.n020  === '') z.n020  = v(7, 14, 1);
-      if (z.n2060 === '') z.n2060 = v(4, 8, 1);
+      const kg = P.unidadN !== 'ppm';
+      if (z.n020  === '') z.n020  = kg ? v(18, 35, 0) : v(7, 14, 1);
+      if (z.n2060 === '') z.n2060 = kg ? v(22, 43, 0) : v(4, 8, 1);
       if (z.mo    === '') z.mo    = v(1.5, 2.7, 1);
       if (z.dap1  === '') z.dap1  = v(1.32, 1.18, 2);
       if (z.dap2  === '') z.dap2  = v(1.42, 1.28, 2);
@@ -1847,6 +2187,359 @@ function labEjemplo(){
     });
   });
   render();
+}
+
+
+
+/* ========================= EXCEL DE IDA Y VUELTA =========================
+   Escritor y lector de .xlsx en JavaScript puro, sin librerías: el tablero
+   tiene que seguir andando sin conexión. El ZIP se escribe sin comprimir;
+   al leer se descomprime con DecompressionStream si Excel lo guardó deflate. */
+
+/* ---- CRC32 ---- */
+const CRC_TB = (() => {
+  const t = new Uint32Array(256);
+  for (let i = 0; i < 256; i++){
+    let c = i;
+    for (let j = 0; j < 8; j++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    t[i] = c >>> 0;
+  }
+  return t;
+})();
+function crc32(u8){
+  let c = 0xFFFFFFFF;
+  for (let i = 0; i < u8.length; i++) c = CRC_TB[(c ^ u8[i]) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+const utf8 = s => new TextEncoder().encode(s);
+const xmlEsc = s => String(s).replace(/[&<>"']/g, c =>
+  ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
+
+/* ---- ZIP sin compresión ---- */
+function zip(archivos){
+  const partes = [], central = [];
+  let off = 0;
+  archivos.forEach(({nombre, datos}) => {
+    const n = utf8(nombre), c = crc32(datos);
+    const lh = new DataView(new ArrayBuffer(30));
+    lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true);
+    lh.setUint16(8, 0, true); lh.setUint16(10, 0, true); lh.setUint16(12, 0, true);
+    lh.setUint32(14, c, true); lh.setUint32(18, datos.length, true);
+    lh.setUint32(22, datos.length, true); lh.setUint16(26, n.length, true); lh.setUint16(28, 0, true);
+    partes.push(new Uint8Array(lh.buffer), n, datos);
+    const ch = new DataView(new ArrayBuffer(46));
+    ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true);
+    ch.setUint16(8, 0x0800, true); ch.setUint16(10, 0, true);
+    ch.setUint32(16, c, true); ch.setUint32(20, datos.length, true); ch.setUint32(24, datos.length, true);
+    ch.setUint16(28, n.length, true); ch.setUint32(42, off, true);
+    central.push(new Uint8Array(ch.buffer), n);
+    off += 30 + n.length + datos.length;
+  });
+  const cenIni = off;
+  let cenLen = 0; central.forEach(p => cenLen += p.length);
+  const fin = new DataView(new ArrayBuffer(22));
+  fin.setUint32(0, 0x06054b50, true);
+  fin.setUint16(8, archivos.length, true); fin.setUint16(10, archivos.length, true);
+  fin.setUint32(12, cenLen, true); fin.setUint32(16, cenIni, true);
+  const todo = [...partes, ...central, new Uint8Array(fin.buffer)];
+  let total = 0; todo.forEach(p => total += p.length);
+  const out = new Uint8Array(total);
+  let q = 0; todo.forEach(p => { out.set(p, q); q += p.length; });
+  return out;
+}
+
+const COL = i => { let s = '', n = i + 1; while (n > 0){ const r = (n - 1) % 26; s = String.fromCharCode(65 + r) + s; n = (n - r - 1) / 26; } return s; };
+
+function hojaXML(filas){
+  const rows = filas.map((f, ri) => {
+    const cs = f.map((v, ci) => {
+      const ref = COL(ci) + (ri + 1);
+      if (v === null || v === undefined || v === '') return '';
+      if (typeof v === 'number' && isFinite(v)) return `<c r="${ref}"><v>${v}</v></c>`;
+      return `<c r="${ref}" t="inlineStr"><is><t xml:space="preserve">${xmlEsc(v)}</t></is></c>`;
+    }).join('');
+    return `<row r="${ri + 1}">${cs}</row>`;
+  }).join('');
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>${rows}</sheetData></worksheet>`;
+}
+
+function xlsx(filas, hoja){
+  const A = [
+    {nombre:'[Content_Types].xml', datos: utf8(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>`)},
+    {nombre:'_rels/.rels', datos: utf8(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`)},
+    {nombre:'xl/workbook.xml', datos: utf8(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="${xmlEsc(hoja)}" sheetId="1" r:id="rId1"/></sheets></workbook>`)},
+    {nombre:'xl/_rels/workbook.xml.rels', datos: utf8(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>`)},
+    {nombre:'xl/worksheets/sheet1.xml', datos: utf8(hojaXML(filas))}
+  ];
+  return zip(A);
+}
+
+/* ---- Lectura: ZIP -> XML -> matriz ---- */
+async function leerXlsx(buf){
+  const u8 = new Uint8Array(buf), dv = new DataView(buf);
+  let fin = -1;
+  for (let i = u8.length - 22; i >= 0 && i > u8.length - 66000; i--)
+    if (dv.getUint32(i, true) === 0x06054b50){ fin = i; break; }
+  if (fin < 0) throw new Error('no parece un archivo .xlsx');
+  const nEnt = dv.getUint16(fin + 10, true);
+  let p = dv.getUint32(fin + 16, true);
+  const entradas = {};
+  for (let i = 0; i < nEnt; i++){
+    const nl = dv.getUint16(p + 28, true), el = dv.getUint16(p + 30, true), cl = dv.getUint16(p + 32, true);
+    const nombre = new TextDecoder().decode(u8.subarray(p + 46, p + 46 + nl));
+    entradas[nombre] = {metodo: dv.getUint16(p + 10, true), comp: dv.getUint32(p + 20, true),
+                        off: dv.getUint32(p + 42, true)};
+    p += 46 + nl + el + cl;
+  }
+  const sacar = async nombre => {
+    const e = entradas[nombre]; if (!e) return null;
+    const nl = dv.getUint16(e.off + 26, true), el = dv.getUint16(e.off + 28, true);
+    const ini = e.off + 30 + nl + el;
+    const crudo = u8.subarray(ini, ini + e.comp);
+    if (e.metodo === 0) return new TextDecoder().decode(crudo);
+    if (typeof DecompressionStream === 'undefined')
+      throw new Error('el archivo está comprimido y este navegador no puede descomprimirlo');
+    const ds = new DecompressionStream('deflate-raw');
+    const r = new Response(new Blob([crudo]).stream().pipeThrough(ds));
+    return await r.text();
+  };
+  const hojaTxt = await sacar('xl/worksheets/sheet1.xml');
+  if (!hojaTxt) throw new Error('no encontré la hoja de datos');
+  const ssTxt = await sacar('xl/sharedStrings.xml');
+  const dom = new DOMParser();
+  let SS = [];
+  if (ssTxt){
+    const d = dom.parseFromString(ssTxt, 'application/xml');
+    SS = [...d.getElementsByTagName('si')].map(si =>
+      [...si.getElementsByTagName('t')].map(t => t.textContent).join(''));
+  }
+  const d = dom.parseFromString(hojaTxt, 'application/xml');
+  const out = [];
+  [...d.getElementsByTagName('row')].forEach(row => {
+    const fila = [];
+    [...row.getElementsByTagName('c')].forEach(c => {
+      const ref = c.getAttribute('r') || '';
+      let ci = 0; const m = ref.match(/^([A-Z]+)/);
+      if (m){ for (const ch of m[1]) ci = ci * 26 + (ch.charCodeAt(0) - 64); ci -= 1; }
+      const t = c.getAttribute('t');
+      let v;
+      if (t === 'inlineStr'){ v = [...c.getElementsByTagName('t')].map(x => x.textContent).join(''); }
+      else { const vn = c.getElementsByTagName('v')[0]; v = vn ? vn.textContent : ''; if (t === 's') v = SS[+v] ?? ''; }
+      fila[ci] = v;
+    });
+    out.push(fila);
+  });
+  return out;
+}
+
+/* ---- Columnas del archivo ---- */
+const XL_ENTRADA = [
+  ['lote',  'Lote',                     l => l.nombre],
+  ['zona',  'Zona de manejo',           (l, z) => z.nombre],
+  ['ha',    'Superficie (ha)',          (l, z) => numO(z.ha)],
+  ['y',     'Rinde objetivo (tn/ha)',   (l, z) => numO(z.y)],
+  ['ds',    'Dosis de siembra (sem/ha)',(l, z) => numO(z.ds)],
+  ['n020',  'N-NO3 0-20',               (l, z) => numO(z.n020)],
+  ['n2060', 'N-NO3 20-60',              (l, z) => numO(z.n2060)],
+  ['mo',    'MO (%)',                   (l, z) => numO(z.mo)],
+  ['dap1',  'Dap 0-20',                 (l, z) => numO(z.dap1)],
+  ['dap2',  'Dap 20-60',                (l, z) => numO(z.dap2)],
+  ['p',     'P Bray (ppm)',             (l, z) => numO(z.p)],
+  ['s',     'S-SO4 (ppm)',              (l, z) => numO(z.s)],
+  ['dosis', 'Dosis N a aplicar (kg/ha)',(l, z) => numO(z.dosis)],
+  ['antecesor','Antecesor',             l => l.antecesor],
+  ['fecha', 'Fecha de siembra',         l => l.fecha],
+  ['campana','Campaña',                 l => l.campana || ''],
+  ['campo', 'Campo',                    l => l.campo || ''],
+  ['loteId','Lote ID',                  l => l.lote || '']
+];
+const XL_RESULT = [
+  ['N-NO3 0-60 (kg/ha)',   r => Math.round(r.Ns)],
+  ['Mineralización',       r => Math.round(r.Nmin)],
+  ['Antecesor (kg N/ha)',  r => Math.round(r.Nant)],
+  ['Oferta (kg N/ha)',     r => Math.round(r.Of)],
+  ['Demanda (kg N/ha)',    r => Math.round(r.D)],
+  ['Umbral',               r => Math.round(r.dUmb)],
+  ['Balance',              r => Math.round(r.dBal)],
+  ['Objetivo g N/pl',      r => Math.round(r.dGnp)],
+  ['Económica',            r => Math.round(r.dEco)],
+  ['Producto (kg/ha)',     r => Math.round(r.kgProd)],
+  ['g N ferti/pl',         r => r.gNf  === null ? '' : Math.round(r.gNf * 100) / 100],
+  ['g N s+f/pl',           r => r.gNsf === null ? '' : Math.round(r.gNsf * 100) / 100],
+  ['Rinde esperado (tn/ha)', r => Math.round(r.rindeEsp * 100) / 100],
+  ['Costo N (US$/ha)',     r => Math.round(r.costoN)],
+  ['Margen N (US$/ha)',    r => Math.round(r.margenN)],
+  ['P2O5 (kg/ha)',         r => Math.round(r.P2O5)],
+  ['S a agregar (kg/ha)',  r => Math.round(r.sFalta)]
+];
+const numO = v => { const n = parseFloat(String(v).replace(',', '.')); return isFinite(n) ? n : ''; };
+
+function exportarExcel(){
+  if (!LOTES.length){ avisar('No hay lotes cargados para exportar.'); return; }
+  const R = calcTodo();
+  const filas = [[...XL_ENTRADA.map(c => c[1]), ...XL_RESULT.map(c => c[0])]];
+  R.forEach(g => g.zonas.forEach((r, i) => {
+    const z = g.lote.zonas[i];
+    filas.push([...XL_ENTRADA.map(c => c[2](g.lote, z)), ...XL_RESULT.map(c => c[1](r))]);
+  }));
+  const hoy = new Date().toISOString().slice(0, 10);
+  bajar(xlsx(filas, 'Lotes'), `balance_N_maiz_${hoy}.xlsx`,
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  avisar(`Exportadas ${filas.length - 1} zonas. Editá las columnas de entrada y volvé a subir el mismo archivo.`);
+}
+
+function bajar(datos, nombre, tipo){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([datos], {type: tipo}));
+  a.download = nombre; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+}
+
+async function importarExcel(input){
+  const file = input.files && input.files[0]; if (!file) return;
+  try {
+    let matriz;
+    if (/\.csv$/i.test(file.name)){
+      const txt = await file.text();
+      const sep = (txt.split('\n')[0].match(/;/g) || []).length >= 2 ? ';' : ',';
+      matriz = txt.split(/\r?\n/).filter(Boolean).map(l => l.split(sep).map(c => c.replace(/^"|"$/g, '')));
+    } else {
+      matriz = await leerXlsx(await file.arrayBuffer());
+    }
+    aplicarMatriz(matriz);
+  } catch(e){ avisar('No pude leer el archivo: ' + e.message); }
+  input.value = '';
+}
+
+function aplicarMatriz(m){
+  if (!m || m.length < 2) throw new Error('el archivo no tiene filas de datos');
+  const hdr = m[0].map(norm);
+  const col = {};
+  XL_ENTRADA.forEach(c => { const i = hdr.indexOf(norm(c[1])); if (i >= 0) col[c[0]] = i; });
+  if (col.lote === undefined || col.zona === undefined)
+    throw new Error('faltan las columnas Lote y Zona de manejo');
+
+  let nz = 0, nl = 0;
+  m.slice(1).forEach(f => {
+    const nomL = String(f[col.lote] ?? '').trim(), nomZ = String(f[col.zona] ?? '').trim();
+    if (!nomL || !nomZ) return;
+    let l = LOTES.find(x => norm(x.nombre) === norm(nomL));
+    if (!l){
+      l = {id: uid++, nombre: nomL, antecesor:'soja', fecha:'tardio', zonas:[]};
+      if (col.antecesor !== undefined && f[col.antecesor]) l.antecesor = String(f[col.antecesor]).trim();
+      if (col.fecha !== undefined && f[col.fecha]) l.fecha = String(f[col.fecha]).trim();
+      if (col.campana !== undefined) l.campana = String(f[col.campana] ?? '').trim();
+      if (col.campo !== undefined) l.campo = String(f[col.campo] ?? '').trim();
+      if (col.loteId !== undefined) l.lote = String(f[col.loteId] ?? '').trim();
+      LOTES.push(l); nl++;
+    }
+    let z = l.zonas.find(x => norm(x.nombre) === norm(nomZ));
+    if (!z){ z = nuevaZona(l.zonas.length + 1); z.nombre = nomZ; l.zonas.push(z); }
+    ['ha','y','ds','n020','n2060','mo','dap1','dap2','p','s','dosis'].forEach(k => {
+      if (col[k] === undefined) return;
+      const v = f[col[k]];
+      z[k] = (v === '' || v === null || v === undefined) ? '' : String(v).replace(',', '.');
+    });
+    nz++;
+  });
+  render();
+  avisar(`Importadas ${nz} zonas${nl ? ` y creados ${nl} lotes nuevos` : ''}.`);
+}
+
+/* ==================== TRAER DATOS DEL LABORATORIO ======================= */
+const rr = (v, d) => String(Math.round(v * Math.pow(10, d)) / Math.pow(10, d));
+
+/* Completa una tarjeta con el análisis más reciente de cada variable.
+   Reemplaza lo que haya: la planilla es la fuente de verdad. */
+function traerLab(li, silencioso){
+  const l = LOTES[li];
+  if (!l || !l.campo){ if (!silencioso) avisar('Este lote no vino del catálogo, así que no sé a qué campo y lote del laboratorio corresponde.'); return 0; }
+  let tocadas = 0;
+  l.zonas.forEach(z => {
+    const ambs = (z.ambs && z.ambs.length) ? z.ambs : [{amb: z.nombre, ha: 1}];
+    const g = cv => labZona(l.campo, l.lote, ambs, cv);
+    const mo = g('mo'), p = g('p'), s = g('s'), d1 = g('dap1'), d2 = g('dap2');
+    const n060 = g('n060'), n020 = g('n020'), n2060 = g('n2060');
+    let f = 0, orig = null, algo = false;
+
+    /* Reparto del nitrato entre estratos. En los 40 muestreos de Suri Yaco que
+       tienen los dos estratos medidos, el 0-20 concentra ~60 % del total de 0-60
+       (60,4 % ponderado por kilos, mediana 62 %). Ese porcentaje es editable y
+       se usa en los dos sentidos. */
+    const fPar = Math.max(n020 ? n020.f : 0, n2060 ? n2060.f : 0);
+    z.repartoN = '';
+    if (n060 && n060.f >= fPar && n060.f > 0){
+      /* el laboratorio informó una sola muestra de 0-60: se reparte */
+      z.n020  = rr(n060.v * P.prorr, 1);
+      z.n2060 = rr(n060.v * (1 - P.prorr), 1);
+      z.repartoN = 'La muestra vino como 0-60 en un solo valor y se repartió entre los dos estratos.';
+      f = Math.max(f, n060.f); orig = orig || n060.origen; algo = true;
+    } else {
+      if (n020){ z.n020 = rr(n020.v, 1); f = Math.max(f, n020.f); orig = orig || n020.origen; algo = true; }
+      if (n2060){ z.n2060 = rr(n2060.v, 1); f = Math.max(f, n2060.f); orig = orig || n2060.origen; algo = true; }
+      if (n020 && !n2060 && P.estim2060){
+        /* sólo se midió el superficial: se estima el profundo con la misma proporción */
+        z.n2060 = rr(n020.v * (1 - P.prorr) / P.prorr, 1);
+        z.repartoN = 'Sólo se midió el estrato 0-20; el 20-60 está estimado con la proporción del reparto.';
+      } else if (n020 && !n2060){
+        z.n2060 = '';
+      }
+    }
+    if (mo){ z.mo = rr(mo.v, 2); f = Math.max(f, mo.f); algo = true; }
+    if (p){  z.p  = rr(p.v, 1);  f = Math.max(f, p.f);  algo = true; }
+    if (s){  z.s  = rr(s.v, 1);  f = Math.max(f, s.f);  algo = true; }
+    if (d1){ z.dap1 = rr(d1.v, 2); }
+    if (d2){ z.dap2 = rr(d2.v, 2); }
+    if (algo){ tocadas++; z.labFecha = f; z.labOrigen = orig || 'propio'; }
+  });
+  if (!silencioso) render();
+  return tocadas;
+}
+
+function traerLabTodos(){
+  let n = 0;
+  LOTES.forEach((l, i) => { n += traerLab(i, true); });
+  render();
+  avisar(n ? `Se completaron ${n} zonas con el análisis más reciente.`
+           : 'No encontré análisis para estos lotes en la planilla de laboratorio.');
+}
+
+/* ============ COPIAR LOS CAMPOS VACÍOS DEL LOTE ANTERIOR ================ */
+const CAMPOS_COPIABLES = ['y','ds','n020','n2060','mo','dap1','dap2','p','s'];
+
+function copiarAnterior(li){
+  if (li <= 0){ avisar('Este es el primer lote de la lista: no hay uno anterior de donde copiar.'); return; }
+  const prev = LOTES[li - 1], act = LOTES[li];
+  let n = 0;
+  act.zonas.forEach((z, i) => {
+    /* se busca la zona del lote anterior por nombre; si no coincide, por posición */
+    const zp = prev.zonas.find(x => norm(x.nombre) === norm(z.nombre)) || prev.zonas[i];
+    if (!zp) return;
+    CAMPOS_COPIABLES.forEach(c => {
+      const vacio = z[c] === '' || z[c] === null || z[c] === undefined;
+      const tiene = !(zp[c] === '' || zp[c] === null || zp[c] === undefined);
+      if (vacio && tiene){ z[c] = zp[c]; n++; }
+    });
+  });
+  render();
+  avisar(n ? `Se copiaron ${n} valores vacíos desde ${prev.nombre}.`
+           : `No había campos vacíos que completar desde ${prev.nombre}.`);
+}
+
+/* Aviso breve y no bloqueante */
+function avisar(txt){
+  let el = $('toast');
+  if (!el){
+    el = document.createElement('div'); el.id = 'toast'; el.className = 'toast';
+    document.body.appendChild(el);
+  }
+  el.textContent = txt; el.classList.add('on');
+  clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('on'), 4200);
 }
 
 /* ----------------------- Catálogo: filtro y alta ------------------------ */
@@ -1889,17 +2582,42 @@ function syAgregar(){
   sel.forEach(k => {
     const l = SY.lotes.find(x => x.campo + '|' + x.lote === k); if (!l) return;
     const x = l.hist[camp], a = antecesorDe(l, camp);
-    /* el rinde objetivo se abre ±15 % entre ambientes; una sola zona toma el valor de referencia */
+    const za = zonasDe(camp, l.campo, l.lote);
+    const zonasAmb = za ? za.zonas : null;
     const zonas = [];
-    for (let i = 0; i < nz; i++){
-      const f = nz === 1 ? 1 : 1 - 0.15 + (0.30 * i) / (nz - 1);
-      const haZ = i === nz - 1 ? x.ha - Math.round(x.ha / nz) * (nz - 1) : Math.round(x.ha / nz);
-      zonas.push({id: uid++, nombre: nz === 1 ? 'Lote completo' : 'Ambiente ' + (i + 1),
-        ha: haZ, y: Math.round(Yref * f * 10) / 10, ds: dsRef(),
-        n020:'', n2060:'', mo:'', dap1:'', dap2:'', p:'', s:'', dosis:''});
+    let fuenteZonas = '';
+
+    if (zonasAmb && zonasAmb.length){
+      /* Zonas de manejo reales de SY_Ambientes: superficie y densidad propias de cada una.
+         El rinde objetivo se escala con el potencial de la zona. */
+      const zs = zonasAmb.slice(0, 4);
+      zs.forEach((z, i) => {
+        const fpot = zs.length === 1 ? 1 : 1 - 0.15 + (0.30 * i) / (zs.length - 1);
+        zonas.push({id: uid++, nombre: z.zm, ha: Math.round(z.ha * 10) / 10,
+          y: Math.round(Yref * fpot * 10) / 10,
+          ds: z.ds ? String(z.ds) : dsRef(), ambs: z.ambs,
+          n020:'', n2060:'', mo:'', dap1:'', dap2:'', p:'', s:'', dosis:''});
+      });
+      const haAmb = zs.reduce((a, z) => a + z.ha, 0);
+      const dif = x.ha > 0 ? Math.abs(haAmb - x.ha) / x.ha : 0;
+      fuenteZonas = zs.length + ' zonas de SY_Ambientes'
+        + (za.camp !== camp ? ' · mapa de ' + za.camp : '')
+        + (dif > 0.02 ? ` · ${fmt(haAmb,1)} ha mapeadas de ${fmt(x.ha,0)}` : '');
+    } else {
+      /* Sin datos de ambientes: se reparte la superficie del lote en partes iguales */
+      for (let i = 0; i < nz; i++){
+        const fpot = nz === 1 ? 1 : 1 - 0.15 + (0.30 * i) / (nz - 1);
+        const haZ = i === nz - 1 ? x.ha - Math.round(x.ha / nz) * (nz - 1) : Math.round(x.ha / nz);
+        zonas.push({id: uid++, nombre: nz === 1 ? 'Lote completo' : 'Ambiente ' + (i + 1),
+          ha: haZ, y: Math.round(Yref * fpot * 10) / 10, ds: dsRef(), ambs: null,
+          n020:'', n2060:'', mo:'', dap1:'', dap2:'', p:'', s:'', dosis:''});
+      }
+      fuenteZonas = 'sin ambientes — superficie en partes iguales';
     }
+
     LOTES.push({id: uid++, nombre: l.campo + ' — ' + l.lote, antecesor: a.key, fecha:'tardio',
-      nota: a.origen, hist: histTexto(l, camp), campana: camp, zonas});
+      nota: a.origen, hist: histTexto(l, camp), campana: camp,
+      campo: l.campo, lote: l.lote, fuenteZonas, zonas});
   });
   render();
   document.getElementById('lotes').scrollIntoView({behavior:'smooth'});
@@ -1916,6 +2634,8 @@ function initEventos(){
     el.addEventListener('input',  () => calcRender());
     el.addEventListener('change', () => calcRender());
   });
+  /* la unidad del N cambia las etiquetas de las filas, así que hay que redibujar las tarjetas */
+  $('p_unidadN').addEventListener('change', () => render());
   $('p_tipoAno').addEventListener('change', e => {
     const b = BANDAS[e.target.value];
     $('p_bandaMin').value  = b.sf[0]; $('p_bandaMax').value  = b.sf[1];
@@ -1928,7 +2648,12 @@ function initEventos(){
     $('p_efFuente').value = fn.ef.toFixed(2);
     calcRender();
   });
-  $('p_fuenteP').addEventListener('change', e => { $('p_pfertP').value = FUENTES_P[e.target.value].precio; calcRender(); });
+  $('p_fuenteP').addEventListener('change', e => {
+    const fp = FUENTES_P[e.target.value];
+    $('p_pfertP').value = fp.precio;
+    $('p_pfertP').disabled = (e.target.value === 'ninguno');
+    calcRender();
+  });
 }
 function initCatalogo(){
   const cs = SY.campanas;
@@ -1941,15 +2666,21 @@ function initCatalogo(){
   $('syCampo').innerHTML = '<option value="">Todos los campos</option>'
     + campos.map(c => `<option value="${esc(c)}"${c === campoSel ? ' selected' : ''}>${esc(c)}</option>`).join('');
   syLista();
-  const b = $('syEstado'); if (b) b.innerHTML = syEstadoHTML();
+  renderFuentes();
 }
 (function init(){
   $('fechaHoy').textContent = new Date().toLocaleDateString('es-AR', {day:'numeric', month:'long', year:'numeric'});
   initAntecesores();
   initEventos();
+  AMB = construirAMB(AMB_ROWS);
+  LAB = construirLAB(LAB_ROWS);
+  FUENTES.rot.estado.filas = SY_ROWS.length;
+  FUENTES.amb.estado.filas = AMB_ROWS.length;
+  FUENTES.lab.estado.filas = LAB_ROWS.length;
   initCatalogo();
+  renderFuentes();
   syAgregar();          // arranca con los lotes de maíz del campo seleccionado
-  syActualizar(true);   // y en segundo plano refresca el catálogo desde la planilla
+  actualizarTodo();     // y en segundo plano refresca las tres planillas
 })();
 </script>
 </body>
