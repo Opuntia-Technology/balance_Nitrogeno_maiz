@@ -282,9 +282,20 @@ body.informe .firma{display:block;margin-top:18px;page-break-inside:avoid}
 
 @media print{
   @page{size:A4 landscape;margin:9mm}
-  /* que los colores salgan aunque el usuario no tilde "Gráficos de fondo" */
-  html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  body{background:#fff}
+  /* Que los colores salgan aunque el usuario no tilde "Gráficos de fondo".
+     Se aplica a los elementos chicos y NO a la página: los degradados a hoja
+     completa se rasterizan y hacen un archivo enorme, que es lo que hace fallar
+     al driver "Microsoft Print to PDF". */
+  .chip,.pill,.kpi,.explic,.obs-box,.grp,.lotesum,.sel-graf,.ih-logo,.lote-plan,
+  .rtable thead th,.ztable thead th,.rtable td,.ztable td,.card,.lote,.legend .sw{
+    -webkit-print-color-adjust:exact;print-color-adjust:exact}
+  /* Las sombras no se ven en papel y el navegador las imprime como imágenes
+     rasterizadas: 34 mapas de bits en un informe de 7 hojas. Eso es lo que
+     desborda al driver "Microsoft Print to PDF" y sale un archivo dañado. */
+  *{box-shadow:none!important}
+  /* fondos de sección a blanco: en papel no aportan nada y pesan mucho */
+  body,section,.hero,#resultados,#resumen{background:#fff!important;background-image:none!important}
+  .ih-logo{background:var(--green)!important}
   .nav,.btn,.toast,.pop{display:none!important}
   .sel-graf{display:none!important}
   section{padding:8px 0!important}
@@ -383,7 +394,7 @@ body.informe .firma{display:block;margin-top:18px;page-break-inside:avoid}
 <div class="wrap solo-informe" id="barraInforme" style="padding-top:10px">
   <button class="btn sm informe-ok" onclick="salirInforme()">← Volver al tablero</button>
   <button class="btn sm primary informe-ok" onclick="window.print()">Imprimir / Guardar PDF</button>
-  <span class="help no-print" style="margin-left:8px">Se imprime apaisado. En el diálogo, activá «Gráficos de fondo» para que salgan los colores.</span>
+  <span class="help no-print" style="margin-left:8px">En el destino del diálogo elegí <b>«Guardar como PDF»</b>, no «Microsoft Print to PDF»: ese driver a veces escribe archivos dañados. Papel A4, horizontal.</span>
   <div id="selGraf"></div>
 </div>
 
