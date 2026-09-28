@@ -171,7 +171,8 @@ details.panel>summary .tag{margin-left:auto;font-size:11.5px;font-weight:650;col
 svg.chart{display:block;font-family:inherit}
 svg.chart text{font-family:inherit}
 .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:12px;color:var(--muted);font-weight:650}
-.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.legend .sw{width:11px;height:11px;margin-right:6px;vertical-align:-1px;flex:none}
+.legend span{display:inline-flex;align-items:center}
 .selrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
 .selrow select{border:1px solid var(--line);border-radius:9px;padding:6px 10px;font-size:13px;font-family:inherit;background:#fff;color:var(--ink)}
 .selrow label{font-size:11.5px;font-weight:700;color:var(--muted)}
@@ -281,6 +282,8 @@ body.informe .firma{display:block;margin-top:18px;page-break-inside:avoid}
 
 @media print{
   @page{size:A4 landscape;margin:9mm}
+  /* que los colores salgan aunque el usuario no tilde "Gráficos de fondo" */
+  html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   body{background:#fff}
   .nav,.btn,.toast,.pop{display:none!important}
   .sel-graf{display:none!important}
@@ -301,9 +304,12 @@ body.informe .firma{display:block;margin-top:18px;page-break-inside:avoid}
   body.informe #lotes{padding-top:6px!important}
   body.informe .lote{margin-bottom:10px}
   body.informe .ztable th,body.informe .ztable td{padding:2px 5px}
-  /* las tarjetas de gráficos con su explicación no entran enteras en una hoja:
-     se achica el texto y, si aun así no entra, se deja partir antes que recortar */
-  #graficos .card,#graficos .grid>.card{break-inside:auto;page-break-inside:auto}
+  /* cada grupo de gráficos arranca hoja nueva y no se parte: así ninguno sale
+     descentrado ni cortado entre dos páginas */
+  #graficos{break-before:page;page-break-before:always}
+  #graficos .grid,#graficos > .wrap > .card{break-inside:avoid;page-break-inside:avoid}
+  #graficos .grid ~ .grid,#graficos .grid ~ .card{break-before:page;page-break-before:always}
+  #resumen{break-before:page;page-break-before:always}
   #graficos h3{font-size:12.5px}
   #graficos .sub{font-size:9.5px;margin-bottom:4px}
   .legend{font-size:9px;gap:4px 10px;margin-top:6px}
@@ -637,11 +643,11 @@ body.informe .firma{display:block;margin-top:18px;page-break-inside:avoid}
       <p class="sub">Cada zona con los cuatro criterios en paralelo y la dosis finalmente decidida</p>
       <div class="chart-wrap" id="chDosis"></div>
       <div class="legend">
-        <span><i style="background:#00897B"></i>Umbral N disponible</span>
-        <span><i style="background:#1565C0"></i>Balance oferta–demanda</span>
-        <span><i style="background:#B0288C"></i>Objetivo g N por planta</span>
-        <span><i style="background:#E8A21A"></i>Óptimo económico</span>
-        <span><i style="background:#4A148C;height:3px;border-radius:2px"></i>Dosis a aplicar</span>
+        <span><svg class="sw" viewBox="0 0 12 12" aria-hidden="true"><rect width="12" height="12" rx="3" fill="#00897B"/></svg>Umbral N disponible</span>
+        <span><svg class="sw" viewBox="0 0 12 12" aria-hidden="true"><rect width="12" height="12" rx="3" fill="#1565C0"/></svg>Balance oferta–demanda</span>
+        <span><svg class="sw" viewBox="0 0 12 12" aria-hidden="true"><rect width="12" height="12" rx="3" fill="#B0288C"/></svg>Objetivo g N por planta</span>
+        <span><svg class="sw" viewBox="0 0 12 12" aria-hidden="true"><rect width="12" height="12" rx="3" fill="#E8A21A"/></svg>Óptimo económico</span>
+        <span><svg class="sw" viewBox="0 0 12 12" aria-hidden="true"><rect y="4.5" width="12" height="3" rx="1.5" fill="#4A148C"/></svg>Dosis a aplicar</span>
       </div>
       <div class="explic">
         <p><b>Las tres primeras barras son diagnósticos distintos del mismo lote.</b> El <b>umbral</b> pide tantos kilos de N disponible por quintal de rinde objetivo y descuenta lo que ya hay en el suelo. El <b>balance</b> resta la oferta a la demanda y divide por la eficiencia de recuperación. El <b>objetivo de g N por planta</b> lleva la cuenta a la escala de la planta individual, usando la dosis de siembra de la zona. Que difieran es información: la brecha mide cuánto pesa cada supuesto.</p>
@@ -655,12 +661,12 @@ body.informe .firma{display:block;margin-top:18px;page-break-inside:avoid}
       <p class="sub">Oferta del suelo apilada contra la demanda del rinde objetivo (línea)</p>
       <div class="chart-wrap" id="chBalance"></div>
       <div class="legend">
-        <span><i style="background:#4A148C"></i>N-NO₃ inicial 0–60</span>
-        <span><i style="background:#7B3FB5"></i>Mineralización</span>
-        <span><i style="background:#B08BD4"></i>Antecesor</span>
-        <span><i style="background:#E8A21A"></i>N del arranque recuperado</span>
-        <span><i style="background:#F5D68A"></i>N de la post recuperado</span>
-        <span><i style="background:#D6483F;border-radius:50%"></i>Demanda</span>
+        <span><svg class="sw" viewBox="0 0 12 12" aria-hidden="true"><rect width="12" height="12" rx="3" fill="#4A148C"/></svg>N-NO₃ inicial 0–60</span>
+        <span><svg class="sw" viewBox="0 0 12 12" aria-hidden="true"><rect width="12" height="12" rx="3" fill="#7B3FB5"/></svg>Mineralización</span>
+        <span><svg class="sw" viewBox="0 0 12 12" aria-hidden="true"><rect width="12" height="12" rx="3" fill="#B08BD4"/></svg>Antecesor</span>
+        <span><svg class="sw" viewBox="0 0 12 12" aria-hidden="true"><rect width="12" height="12" rx="3" fill="#E8A21A"/></svg>N del arranque recuperado</span>
+        <span><svg class="sw" viewBox="0 0 12 12" aria-hidden="true"><rect width="12" height="12" rx="3" fill="#F5D68A"/></svg>N de la post recuperado</span>
+        <span><svg class="sw" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="6" fill="#D6483F"/></svg>Demanda</span>
       </div>
       <div class="explic">
         <p><b>Qué apila cada barra.</b> Los tres tramos violetas son N que ya está en el lote: el <b>nitrato medido</b> de 0 a 60 cm, lo que se estima que va a <b>mineralizar</b> la materia orgánica durante el cultivo, y el crédito o la deuda que deja el <b>antecesor</b>. Los dos tramos amarillos son el fertilizante, separado en lo que entra al costado de la semilla y lo que entra en la refertilización. La rayita roja es la demanda del rinde objetivo.</p>
@@ -676,9 +682,9 @@ body.informe .firma{display:block;margin-top:18px;page-break-inside:avoid}
       <p class="sub">Gramos de N que recibe cada planta con la dosis decidida, contra la banda objetivo del tipo de año</p>
       <div class="chart-wrap" id="chNpl"></div>
       <div class="legend">
-        <span><i style="background:#4A148C"></i>N del suelo (N-NO₃ 0–60)</span>
-        <span><i style="background:#E8A21A"></i>N del fertilizante</span>
-        <span><i style="background:#B0288C;opacity:.22"></i>Banda objetivo</span>
+        <span><svg class="sw" viewBox="0 0 12 12" aria-hidden="true"><rect width="12" height="12" rx="3" fill="#4A148C"/></svg>N del suelo (N-NO₃ 0–60)</span>
+        <span><svg class="sw" viewBox="0 0 12 12" aria-hidden="true"><rect width="12" height="12" rx="3" fill="#E8A21A"/></svg>N del fertilizante</span>
+        <span><svg class="sw" viewBox="0 0 12 12" aria-hidden="true"><rect width="12" height="12" rx="3" fill="#B0288C" opacity=".22"/></svg>Banda objetivo</span>
       </div>
     </div>
     <div class="card">
@@ -686,9 +692,9 @@ body.informe .firma{display:block;margin-top:18px;page-break-inside:avoid}
       <p class="sub">2.405 registros de maíz de Suri Yaco, con el rinde centrado dentro de cada campaña × ambiente × campo</p>
       <div class="chart-wrap" id="chHist"></div>
       <div class="legend">
-        <span><i style="background:#C1873B"></i>Año seco</span>
-        <span><i style="background:#1565C0"></i>Año normal</span>
-        <span><i style="background:#00897B"></i>Año húmedo</span>
+        <span><svg class="sw" viewBox="0 0 12 12" aria-hidden="true"><rect width="12" height="12" rx="3" fill="#C1873B"/></svg>Año seco</span>
+        <span><svg class="sw" viewBox="0 0 12 12" aria-hidden="true"><rect width="12" height="12" rx="3" fill="#1565C0"/></svg>Año normal</span>
+        <span><svg class="sw" viewBox="0 0 12 12" aria-hidden="true"><rect width="12" height="12" rx="3" fill="#00897B"/></svg>Año húmedo</span>
       </div>
       <div class="explic">
         <p><b>Qué mide el eje vertical.</b> No es el rinde, es la <b>diferencia contra el promedio de su propio grupo</b>. Cada registro histórico se comparó con las demás zonas de su misma campaña, su misma clase ambiental y su mismo campo. Así el efecto del año y el del ambiente quedan afuera y lo que sobra es el efecto del nitrógeno. Un punto en +0,4 significa que esas zonas rindieron 0,4 tn/ha más que sus pares.</p>
@@ -711,15 +717,15 @@ body.informe .firma{display:block;margin-top:18px;page-break-inside:avoid}
       <div>
         <div class="chart-wrap" id="chResp"></div>
         <div class="legend">
-          <span><i style="background:#6A1B9A"></i>Rinde esperado</span>
-          <span><i style="background:#E8A21A"></i>Óptimo económico</span>
-          <span><i style="background:#1565C0"></i>Óptimo técnico</span>
+          <span><svg class="sw" viewBox="0 0 12 12" aria-hidden="true"><rect width="12" height="12" rx="3" fill="#6A1B9A"/></svg>Rinde esperado</span>
+          <span><svg class="sw" viewBox="0 0 12 12" aria-hidden="true"><rect width="12" height="12" rx="3" fill="#E8A21A"/></svg>Óptimo económico</span>
+          <span><svg class="sw" viewBox="0 0 12 12" aria-hidden="true"><rect width="12" height="12" rx="3" fill="#1565C0"/></svg>Óptimo técnico</span>
         </div>
       </div>
       <div>
         <div class="chart-wrap" id="chMargen"></div>
         <div class="legend">
-          <span><i style="background:#1565C0"></i>Margen del N (ingreso extra − costo del N)</span>
+          <span><svg class="sw" viewBox="0 0 12 12" aria-hidden="true"><rect width="12" height="12" rx="3" fill="#1565C0"/></svg>Margen del N (ingreso extra − costo del N)</span>
         </div>
       </div>
     </div>
@@ -2828,6 +2834,7 @@ function entrarInforme(){
 function salirInforme(){
   INFORME = false;
   document.body.classList.remove('informe');
+  document.title = TITULO_BASE;
   render();
 }
 
@@ -2863,8 +2870,23 @@ function toggleGraf(id, on){
 }
 
 /* ---- Encabezado de identificación ---- */
+/* Chrome propone el <title> del documento como nombre del archivo al imprimir,
+   así que en modo orden se lo cambia a "campo - campaña" y al salir se repone. */
+const TITULO_BASE = document.title;
+function nombreInforme(){
+  const limpio = t => String(t).replace(/[\\/:*?"<>|]/g, '-').replace(/\s+/g, ' ').trim();
+  const campos = [...new Set(LOTES.map(l => l.campo).filter(Boolean))];
+  const camps  = [...new Set(LOTES.map(l => l.campana).filter(Boolean))];
+  const campo  = campos.length === 1 ? campos[0]
+               : campos.length > 1   ? campos.slice(0, 3).join(' + ') + (campos.length > 3 ? ' y otros' : '')
+               : 'Orden de trabajo';
+  const camp   = camps.length ? camps.join(' - ') : String(new Date().getFullYear());
+  return limpio(campo + ' - ' + camp);
+}
+
 function renderCabecera(R){
   if (!$('ih_camp')) return;
+  if (INFORME) document.title = nombreInforme();
   const camps = [...new Set(LOTES.map(l => l.campana).filter(Boolean))];
   const ha = R.reduce((a, g) => a + g.ha, 0);
   const nz = R.reduce((a, g) => a + g.zonas.length, 0);
@@ -3215,8 +3237,7 @@ function exportarExcel(){
     const z = g.lote.zonas[i];
     filas.push([...XL_ENTRADA.map(c => c[2](g.lote, z)), ...XL_RESULT.map(c => c[1](r))]);
   }));
-  const hoy = new Date().toISOString().slice(0, 10);
-  bajar(xlsx(filas, 'Lotes'), `balance_N_maiz_${hoy}.xlsx`,
+  bajar(xlsx(filas, 'Lotes'), `${nombreInforme()} - balance N maíz.xlsx`,
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   avisar(`Exportadas ${filas.length - 1} zonas. Editá las columnas de entrada y volvé a subir el mismo archivo.`);
 }
@@ -3224,7 +3245,10 @@ function exportarExcel(){
 function bajar(datos, nombre, tipo){
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([datos], {type: tipo}));
-  a.download = nombre; document.body.appendChild(a); a.click();
+  /* abriendo el tablero como archivo local, Chrome descarta el nombre propuesto
+     si tiene acentos y guarda "download": se pasan a ASCII y se respeta */
+  a.download = nombre.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  document.body.appendChild(a); a.click();
   setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
 }
 
