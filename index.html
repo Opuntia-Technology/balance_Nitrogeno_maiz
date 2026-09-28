@@ -845,7 +845,7 @@ function parsear(key, resp){
               amb:txt(c[idx.ambiente]), clase:nm(c[idx.clase]), ha:nm(c[idx.ha]) || 0,
               zm:txt(c[idx.zm]), ds:nm(c[idx.ds])};
     return {fecha:fechaNum(c[idx.fecha]), campo:txt(c[idx.campo]), lote:txt(c[idx.lote]),
-            amb:txt(c[idx.ambiente]), prof:norm(txt(c[idx.prof])),
+            amb:txt(c[idx.ambiente]), prof:txt(c[idx.prof]),
             dap:nm(c[idx.dap]), mo:nm(c[idx.mo]), nno3:nm(c[idx.nno3]),
             p:nm(c[idx.p]), s:nm(c[idx.s])};
   }).filter(r => key === 'rot' ? (r[0] && r[1] && r[2]) : (r.campo && r.lote));
@@ -924,10 +924,18 @@ function construirAMB(rows){
 /* ===================== ÍNDICE DE LABORATORIO (DS_Lab) ==================== */
 let LAB = {};                       // "campo|lote|ambiente" -> {mo:{v,f}, n020:{v,f}, ...}
 
-/* Un estrato informado como 20-40 se toma como 20-60; 0-60 es una muestra única */
-const estrato = p => p === '020' ? '020'
-                   : (p === '2060' || p === '2040') ? '2060'
-                   : p === '060' ? '060' : null;
+/* Lectura del estrato a partir de los dos números de la celda, para que aguante
+   variantes de escritura: "0-20", "0 a 20", "0-20 cm", "020". Un estrato informado
+   como 20-40 se toma como 20-60, y 0-60 es una muestra única del perfil entero. */
+function estrato(txt){
+  const n = String(txt || '').match(/\d+/g);
+  if (!n || n.length < 2) return null;
+  const a = +n[0], b = +n[1];
+  if (a === 0 && b === 20) return '020';
+  if (a === 20 && (b === 60 || b === 40)) return '2060';
+  if (a === 0 && b === 60) return '060';
+  return null;                      // 0-200 es agua útil; 0-10, 10-20, 0-5 y 0-30 no se usan
+}
 
 /* Filas crudas -> formato de snapshot [campo, lote, ambiente, {var:[valor, fecha]}] */
 function agregarLAB(raw){
@@ -943,11 +951,11 @@ function agregarLAB(raw){
     const k = [r.campo, r.lote, amb].join('\u0001');
     const o = (ix[k] = ix[k] || {});
     if (e === '020'){
-      poner(o, 'mo', r.mo, r.fecha);  poner(o, 'dap1', r.dap, r.fecha);
-      poner(o, 'p',  r.p,  r.fecha);  poner(o, 's',    r.s,   r.fecha);
+      poner(o, 'mo', r.mo, r.fecha);
+      poner(o, 'p',  r.p,  r.fecha);  poner(o, 's', r.s, r.fecha);
       poner(o, 'n020', r.nno3, r.fecha);
     } else if (e === '2060'){
-      poner(o, 'n2060', r.nno3, r.fecha); poner(o, 'dap2', r.dap, r.fecha);
+      poner(o, 'n2060', r.nno3, r.fecha);
       poner(o, 'mo', r.mo, r.fecha);
     } else {
       poner(o, 'n060', r.nno3, r.fecha);
@@ -997,7 +1005,14 @@ function labValor(campo, lote, amb, cv){
     if (k.split('|')[0] !== campo || !o[cv]) return;
     acc += o[cv].v; n++; fm = Math.max(fm, o[cv].f);
   });
-  return n ? {v: acc / n, f: fm, origen:'promedio de ' + campo} : null;
+  if (n) return {v: acc / n, f: fm, origen:'promedio de ' + campo};
+
+  /* El campo entero no tiene esta variable: último recurso, el promedio general.
+     Es un valor flojo, pero dejar la celda vacía es peor: la MO en cero apaga la
+     mineralización y el balance termina pidiendo fertilizante de más. */
+  acc = 0; n = 0; fm = 0;
+  Object.values(LAB).forEach(o => { if (!o[cv]) return; acc += o[cv].v; n++; fm = Math.max(fm, o[cv].f); });
+  return n ? {v: acc / n, f: fm, origen:'promedio general — revisar'} : null;
 }
 
 /* Valor de una zona de manejo: promedio ponderado por hectárea de los
@@ -1622,10 +1637,13 @@ function labChip(l){
   const f = Math.max(...fs);
   const sup = [...new Set(l.zonas.map(z => z.labOrigen).filter(o => o && o !== 'propio'))];
   const rep = [...new Set(l.zonas.map(z => z.repartoN).filter(Boolean))];
+  const fal = [...new Set(l.zonas.flatMap(z => z.labFaltan || []))];
   const col = sup.length ? '#fdf3e0' : '#eaf7ec', tc = sup.length ? '#96690c' : '#2E7D32';
   return `<span class="chip" style="background:${col};color:${tc}" title="${sup.length
     ? 'Sin análisis propio en alguna zona; se usó: ' + esc(sup.join(' · '))
-    : 'Análisis propio del lote'}${rep.length ? ' — ' + esc(rep.join(' ')) : ''}">lab ${fechaTxt(f)}${sup.length ? ' · suplido' : ''}${rep.length ? ' · N repartido' : ''}</span>`;
+    : 'Análisis propio del lote'}${rep.length ? ' — ' + esc(rep.join(' ')) : ''}">lab ${fechaTxt(f)}${sup.length ? ' · suplido' : ''}${rep.length ? ' · N repartido' : ''}</span>`
+    + (fal.length ? `<span class="chip" style="background:#fdeceb;color:#b3392f"
+         title="La planilla no tiene estos análisis para este lote ni para el campo. Cargalos a mano.">sin dato: ${esc(fal.join(', '))}</span>` : '');
 }
 
 function renderLotes(){
@@ -2463,7 +2481,7 @@ function traerLab(li, silencioso){
   l.zonas.forEach(z => {
     const ambs = (z.ambs && z.ambs.length) ? z.ambs : [{amb: z.nombre, ha: 1}];
     const g = cv => labZona(l.campo, l.lote, ambs, cv);
-    const mo = g('mo'), p = g('p'), s = g('s'), d1 = g('dap1'), d2 = g('dap2');
+    const mo = g('mo'), p = g('p'), s = g('s');
     const n060 = g('n060'), n020 = g('n020'), n2060 = g('n2060');
     let f = 0, orig = null, algo = false;
 
@@ -2493,8 +2511,15 @@ function traerLab(li, silencioso){
     if (mo){ z.mo = rr(mo.v, 2); f = Math.max(f, mo.f); algo = true; }
     if (p){  z.p  = rr(p.v, 1);  f = Math.max(f, p.f);  algo = true; }
     if (s){  z.s  = rr(s.v, 1);  f = Math.max(f, s.f);  algo = true; }
-    if (d1){ z.dap1 = rr(d1.v, 2); }
-    if (d2){ z.dap2 = rr(d2.v, 2); }
+    /* La densidad aparente no se trae del laboratorio: hay muy pocos registros y
+       algunos son imposibles para un suelo mineral. Se completan los valores por
+       defecto de los supuestos, que quedan a la vista y se pueden editar. */
+    z.dap1 = rr(P.dap1, 2);
+    z.dap2 = rr(P.dap2, 2);
+
+    /* Qué quedó sin dato, para poder avisarlo */
+    z.labFaltan = [['MO', mo], ['P Bray', p], ['S-SO₄', s],
+                   ['N-NO₃', (n060 || n020 || n2060)]].filter(x => !x[1]).map(x => x[0]);
     if (algo){ tocadas++; z.labFecha = f; z.labOrigen = orig || 'propio'; }
   });
   if (!silencioso) render();
